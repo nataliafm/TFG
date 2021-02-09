@@ -1,19 +1,30 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <b-navbar toggleable="lg" type="dark" variant="info" fixed="top">
+      <b-navbar-brand>LOGO</b-navbar-brand>
+      <b-navbar-toggle></b-navbar-toggle>
+
+      <b-collapse id="nav-collapse" is-nav>
+        <b-navbar-nav class="ml-auto">
+          <b-nav-item href="#">Registrarse</b-nav-item>
+          <b-nav-item href="#">Iniciar sesión</b-nav-item>
+        </b-navbar-nav>
+      </b-collapse>
+
+    </b-navbar>
+    <InicioSinRegistrar />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import InicioSinRegistrar from "./components/InicioSinRegistrar.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    InicioSinRegistrar,
+  },
+};
 </script>
 
 <style>
