@@ -6,23 +6,27 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
-          <b-nav-item href="#">Registrarse</b-nav-item>
-          <b-nav-item href="#">Iniciar sesión</b-nav-item>
+          <b-nav-item to="/registro">Registrarse</b-nav-item>
+          <b-nav-item href="/login">Iniciar sesión</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
 
     </b-navbar>
+    <Login />
+    <Registro />
     <InicioSinRegistrar />
   </div>
 </template>
 
 <script>
 import InicioSinRegistrar from "./components/InicioSinRegistrar.vue";
+import Registro from "./components/Registro.vue";
+import Login from "./components/Login.vue";
 
 export default {
   name: "App",
   components: {
-    InicioSinRegistrar,
+    InicioSinRegistrar, Registro, Login
   },
 };
 </script>
