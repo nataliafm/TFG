@@ -2,7 +2,7 @@
   <div class="Registro">
     <div class="cajaRegistro">
       <div class="formRegistro">
-        <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+        <b-form @submit.prevent="submit" v-if="show">
           <b-form-group
             id="email"
             label="Correo electrónico:"
@@ -55,6 +55,8 @@
 </template>
 
 <script>
+import firebase from "firebase";
+
 export default {
   name: "Registro",
   props: {},
@@ -63,10 +65,49 @@ export default {
       form: {
         email: "",
         username: "",
-        password: "",
+        password: ""
       },
-      show: true,
+      error: null,
+      show: true
     };
+  },
+  methods: {
+    submit() {
+      var d = this.form;
+      console.log(d);
+
+      firebase.auth()
+        .createUserWithEmailAndPassword(d.email, d.password)
+        .then(function() {
+          var ident = firebase.auth().currentUser.uid;
+          var db = firebase.firestore();
+
+          console.log(d);
+
+          db
+            .collection('Usuario')
+            .doc(ident)
+            .set({
+              idUsuario: ident,
+              email: d.email,
+              username: d.username,
+              pais: "",
+              fotoPerfil: "",
+              descripcion: ""
+            })
+            .then(function () {
+              console.log("Document successfully written!");
+            })
+            .catch(function (error) {
+              console.log("fuck");
+              console.error("Error writing document: ", error);
+            });
+            console.log("ident");
+        })
+        .catch((err) => {
+          this.error = err.message;
+        });
+    },
   },
 };
 </script>
@@ -96,8 +137,8 @@ a {
   padding-top: 1%;
   padding-bottom: 1%;
 }
-.formRegistro{
-    width: 80%;
-    margin: auto;
+.formRegistro {
+  width: 80%;
+  margin: auto;
 }
 </style>
