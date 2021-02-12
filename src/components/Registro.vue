@@ -74,15 +74,13 @@ export default {
   methods: {
     submit() {
       var d = this.form;
-      console.log(d);
+      var _this = this;
 
       firebase.auth()
         .createUserWithEmailAndPassword(d.email, d.password)
         .then(function() {
           var ident = firebase.auth().currentUser.uid;
           var db = firebase.firestore();
-
-          console.log(d);
 
           db
             .collection('Usuario')
@@ -97,12 +95,11 @@ export default {
             })
             .then(function () {
               console.log("Document successfully written!");
+              _this.$router.push({path: '/'});
             })
             .catch(function (error) {
-              console.log("fuck");
               console.error("Error writing document: ", error);
             });
-            console.log("ident");
         })
         .catch((err) => {
           this.error = err.message;

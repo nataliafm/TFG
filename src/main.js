@@ -5,9 +5,9 @@ import firebase from 'firebase'
 import VueFirestore from 'vue-firestore';
 import App from './App.vue'
 
-import InicioSinRegistrar from "./components/InicioSinRegistrar.vue";
 import Registro from "./components/Registro.vue";
 import Login from "./components/Login.vue";
+import Inicio from "./components/Inicio.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -23,9 +23,9 @@ const router = new VueRouter({
   mode: 'history',
   base: __dirname,
   routes: [
-    { path: '/', component: InicioSinRegistrar },
-    { path: '/registro', component: Registro },
-    { path: '/login', component: Login }
+    { path: '/', name: 'home', component: Inicio },
+    { path: '/registro', name: 'registro', component: Registro },
+    { path: '/login', name: 'login', component: Login }
   ]
 });
 

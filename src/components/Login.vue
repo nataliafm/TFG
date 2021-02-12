@@ -2,7 +2,7 @@
   <div class="Login">
     <div class="cajaRegistro">
       <div class="formRegistro">
-        <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+        <b-form @submit.prevent="entrar" v-if="show">
           <b-form-group
             id="email"
             label="Correo electrónico:"
@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import firebase from "firebase";
+
 export default {
   name: "Login",
   props: {},
@@ -51,6 +53,23 @@ export default {
       },
       show: true,
     };
+  },
+  methods: {
+    entrar() {
+      var d = this.form;
+      var _this = this;
+      
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(d.email, d.password)
+        .then(function () {
+          console.log("Success");
+          _this.$router.push({ path: "/" });
+        })
+        .catch(function (error) {
+          console.error("Error: ", error);
+        });
+    },
   },
 };
 </script>
@@ -80,8 +99,8 @@ a {
   padding-top: 1%;
   padding-bottom: 1%;
 }
-.formRegistro{
-    width: 80%;
-    margin: auto;
+.formRegistro {
+  width: 80%;
+  margin: auto;
 }
 </style>
