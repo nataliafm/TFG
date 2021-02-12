@@ -1,7 +1,9 @@
 <template>
-  <div class="inicio" v-bind:userstate="estaLogueado()" >
+  <div class="inicio" v-bind:userstate="estaLogueado()">
     <div v-if="userstate">
-        <InicioRegistrado />
+      Bienvenido, {{ username }}
+      <b-button v-on:click="logout()">Log out</b-button>
+      <InicioRegistrado />
     </div>
     <div v-if="!userstate">
       <InicioSinRegistrar />
@@ -24,17 +26,45 @@ export default {
   data() {
     return {
       userstate: false,
+      username: "",
     };
   },
   methods: {
     estaLogueado() {
-      let user = firebase.auth().currentUser;
+      var _this = this;
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          _this.userstate = true;
 
-      if (user) {
-        this.userstate = true; 
-      } else {
-        this.userstate = false;
-      }
+          var uid = user.uid;
+
+          var docRef = firebase.firestore().collection("Usuario").doc(uid);
+          docRef.get().then(function (doc) {
+            if (doc.exists) {
+              _this.username = doc.data().username;
+            } else {
+              console.log("Error al obtener los datos");
+            }
+          });
+        } else {
+          console.log("no esta loggeado");
+          this.userstate = false;
+        }
+      });
+    },
+    logout() {
+      var _this = this;
+      
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          console.log("Logged out");
+          _this.$router.go();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };
