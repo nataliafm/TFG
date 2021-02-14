@@ -3,7 +3,7 @@
     <div v-if="!obtenido">
       {{ buscaSerie() }}
     </div>
-    Resultado: {{resultado['results'][0]['name']}}
+    Resultado: {{resultado['name']}}
   </div>
 </template>
 
@@ -33,8 +33,9 @@ export default {
       console.log("Error callback: " + data);
     },
     buscaSerie() {
-      themoviedb.search.getTv(
-        { query: "Breaking%20Bad" },
+      var _this = this;
+      themoviedb.tv.getById(
+        { "id": _this.$route.query.id },
         this.successCB,
         this.errorCB
       );
