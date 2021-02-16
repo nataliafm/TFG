@@ -3,7 +3,6 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import VueRouter from 'vue-router'
 import firebase from 'firebase'
 import VueFirestore from 'vue-firestore';
-//import themoviedb from 'themoviedb-javascript-library';
 import App from './App.vue'
 
 import Registro from "./components/Registro.vue";
@@ -13,6 +12,7 @@ import Serie from "./components/Serie.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import './scss/custom.scss'
 
 var firebaseConfig = {
   apiKey: "AIzaSyAnqQfQ5Ore-IDmHgIgHcrXSI7ou3s4MHA",

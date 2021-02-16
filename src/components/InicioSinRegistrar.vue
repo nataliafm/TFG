@@ -22,7 +22,7 @@
       <div v-if="!obtenido">
         {{ obtenerSeries() }}
       </div>
-      <b-card-group deck>
+      <b-card-group deck v-if="terminado">
         <b-card class="card" title-tag="h6">
           <router-link :to="{path:'/serie', query: { id: getId(0) }}">
             <b-card-img :src="getPoster(0)" :alt="getTitulo(0)"/>
@@ -68,6 +68,7 @@ export default {
     return {
       obtenido: false,
       resultado: [],
+      terminado: false,
     };
   },
   methods: {
@@ -75,14 +76,18 @@ export default {
       console.log("Success callback: " + data);
       var aux = JSON.parse(data);
       this.resultado.push(aux);
+      if (aux['results'][0]['name'] == "The Office")
+        this.terminado = true;
     },
     errorCB(data) {
       console.log("Error callback: " + data);
     },
-    async obtenerSeries() {
+    obtenerSeries() {
       var queries = ["Breaking%20Bad", "Game%20of%20Thrones", "The%20Crown", "How%20to%20get%20away", "The%20Office%20US"];
       for (var i = 0 ; i < queries.length ; i++){
-        await this.ejecutarQuery(i, queries);
+        this.ejecutarQuery(i, queries).then((res) => {
+          console.log(res);
+        });
       }
       this.obtenido = true;
     },
@@ -102,6 +107,7 @@ export default {
           _this.successCB,
           _this.errorCB
           );
+
 
       return "hola";
     },
