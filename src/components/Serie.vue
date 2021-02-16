@@ -75,7 +75,9 @@
                 <template slot="img" v-for="j in numTemporada">
                   <b-container :key="j">
                     <b-col cols="1" class="columna2">
+                      <router-link :to="{path:'/temporada', query: { id: getIdTemporada(), numero: getNumeroTemporada(i, j), nombre: getTitulo()}}">
                       <b-img rounded width="150px" class="posterTemporada" :src="getPosterTemporada(i, j)"></b-img>
+                      </router-link>
                       <div>{{ getNombreTemporada(i, j) }}</div>
                     </b-col>
                   </b-container>
@@ -122,6 +124,13 @@ export default {
     };
   },
   methods: {
+    getIdTemporada(){
+      var _this = this;
+      return _this.$route.query.id;
+    },
+    getNumeroTemporada(i, j){
+      return this.temporadas[(i - 1) * 5 + j]["season_number"];
+    },
     success1(data) {
       console.log("Success callback: " + data);
       this.resultado = JSON.parse(data);
