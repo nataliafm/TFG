@@ -76,7 +76,7 @@
                   <b-container :key="j">
                     <b-col cols="1" class="columna2">
                       <router-link :to="{path:'/temporada', query: { id: getIdTemporada(), numero: getNumeroTemporada(i, j), nombre: getTitulo()}}">
-                      <b-img rounded width="150px" class="posterTemporada" :src="getPosterTemporada(i, j)"></b-img>
+                        <b-img rounded width="150px" class="posterTemporada" :src="getPosterTemporada(i, j)"></b-img>
                       </router-link>
                       <div>{{ getNombreTemporada(i, j) }}</div>
                     </b-col>

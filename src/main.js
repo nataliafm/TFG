@@ -10,6 +10,7 @@ import Login from "./components/Login.vue";
 import Inicio from "./components/Inicio.vue";
 import Serie from "./components/Serie.vue";
 import Temporada from "./components/Temporada.vue";
+import Episodio from "./components/Episodio.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -42,7 +43,8 @@ const router = new VueRouter({
     { path: '/registro', name: 'registro', component: Registro },
     { path: '/login', name: 'login', component: Login },
     { path: '/serie', name: 'serie', component: Serie },
-    { path: '/temporada', name: 'temporada', component: Temporada },
+    { path: '/temporada', name: 'temporada', component: Temporada, props: true },
+    { path: '/episodio', name: 'episodio', component: Episodio, props: true },
   ]
 });
 

@@ -18,26 +18,23 @@
         </b-col>
         <b-col cols="9">
           <div class="descripcion">
-            <h1 align="left">Temporada {{ resultado["season_number"] }}</h1>
+            <h1 align="left">{{getTituloSerie()}}: Temporada {{ resultado["season_number"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
           </div>
           <h3 align="left">Capítulos</h3>
-          <b-card-group
-            class="capitulos"
-            v-for="i in numCapitulos"
-            :key="i"
-          >
+          <b-card-group class="capitulos" v-for="i in numCapitulos" :key="i">
             <b-card class="carta" :img-src="getPath(i)" img-left>
-              <!--<b-card-img :src-img="getPath(i)" :alt="getTituloSerie()" :left="true" class="foto"></b-card-img>-->
               <b-card-body>
-                <b-card-title>{{
+                <router-link :to="{name:'episodio', query: { id: getIdSerie(), nombre: getTitulo(), temp: getNumeroTemporada(), num: getNumCapitulo(i)}, params: {pathPoster: getPoster()}}">
+                  <b-card-title>{{
                     resultado["episodes"][i]["name"]
-                }}</b-card-title>
+                  }}</b-card-title>
+                </router-link>
                 <b-card-sub-title>{{
-                    resultado["episodes"][i]["air_date"]
+                  resultado["episodes"][i]["air_date"]
                 }}</b-card-sub-title>
                 <b-card-text>{{
-                    resultado["episodes"][i]["overview"]
+                  resultado["episodes"][i]["overview"]
                 }}</b-card-text>
               </b-card-body>
             </b-card>
@@ -61,16 +58,30 @@ export default {
       tituloSerie: "",
       numCapitulos: "",
       pathsFotos: [],
+      idSerie: "",
+      numeroTemporada: "",
     };
   },
   methods: {
+    getIdSerie(){
+      return this.idSerie;
+    },
+    getTitulo(){
+      return this.tituloSerie;
+    },
+    getNumeroTemporada(){
+      return this.numeroTemporada;
+    },
+    getNumCapitulo(i){
+      return i + 1;
+    },
     buscarTemporada() {
       var _this = this;
-      var id = _this.$route.query.id;
-      var numero = _this.$route.query.numero;
+      this.idSerie = _this.$route.query.id;
+      this.numeroTemporada = _this.$route.query.numero;
       this.tituloSerie = _this.$route.query.nombre;
 
-      this.getIdTemporada(id, numero)
+      this.getIdTemporada()
         .then((res) => {
           console.log("1 " + res);
         })
@@ -78,10 +89,9 @@ export default {
           console.log(e);
         });
     },
-    async getIdTemporada(id, num) {
-      console.log("hola");
+    async getIdTemporada() {
       themoviedb.tvSeasons.getById(
-        { id: id, season_number: num },
+        { id: this.idSerie, season_number: this.numeroTemporada },
         this.successCB,
         this.errorCB
       );
@@ -95,40 +105,9 @@ export default {
         Array(this.resultado["episodes"].length).keys()
       );
 
-      var _this = this;
-      var id = _this.$route.query.id;
-      var numero = _this.$route.query.numero;
-
-      this.getPathsFotos(id, numero)
-        .then((res) => {
-          console.log("2 " + res);
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    },
-    errorCB(data) {
-      console.log("Error callback: " + data);
-    },
-    async getPathsFotos(id, numero) {
-      for (var j = 1; j <= this.resultado["episodes"].length; j++) {
-        themoviedb.tvEpisodes.getImages(
-          { id: id, season_number: numero, episode_number: j },
-          this.successCB1,
-          this.errorCB1
-        );
-      }
-      return " hola";
-    },
-    successCB1(data) {
-      console.log("Success callback: " + data);
-      var r = JSON.parse(data);
-
-      this.pathsFotos.push(r['stills'][0]['file_path']);
-
       this.datosObtenidos = true;
     },
-    errorCB1(data) {
+    errorCB(data) {
       console.log("Error callback: " + data);
     },
     getPoster() {
@@ -140,8 +119,11 @@ export default {
       return this.tituloSerie;
     },
     getPath(i) {
-        return "https://image.tmdb.org/t/p/original" + this.pathsFotos[i];
-    }
+      return (
+        "https://image.tmdb.org/t/p/original" +
+        this.resultado["episodes"][i]["still_path"]
+      );
+    },
   },
 };
 </script>
@@ -169,20 +151,20 @@ a {
   margin-top: 2em;
 }
 .capitulos {
-    width: 100%;
+  width: 100%;
 }
 .carta {
-    width: 100%;
+  width: 100%;
 }
 .foto {
-    width: 200px;
+  width: 200px;
 }
-.carta{
+.carta {
   color: rgb(0, 0, 0);
   border: none;
-  width: 100%!important;
-   height: 200px!important;
-   object-fit: cover;
-   margin-top: 1em;
+  width: 100% !important;
+  height: 200px !important;
+  object-fit: cover;
+  margin-top: 1em;
 }
 </style>
