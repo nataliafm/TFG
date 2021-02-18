@@ -6,17 +6,18 @@
 
     <b-container v-if="datosObtenidos">
       <b-row>
-        <b-col cols="3">
+        <b-col cols="3" class="mt-4">
           <div>
             <b-img
               :src="getPoster()"
               :alt="getTitulo()"
               width="200px"
               class="poster"
+              fluid-grow
             />
           </div>
         </b-col>
-        <b-col cols="9">
+        <b-col cols="9" class="mt-4">
           <div class="descripcion">
             <h1 align="left">
               Temporada {{ getNumTemporada() }}, Episodio
@@ -28,20 +29,37 @@
             <h3 align="left">Actores</h3>
 
             <b-carousel controls :interval="9999999" class="actores">
-              <b-carousel-slide v-for="i in paginasActores" :key="i">
-                <template slot="img" v-for="j in numElementosActores">
-                  <b-container :key="j" class="cards">
-                    <b-col cols="1" class="columna">
-                      <b-img :src="getActor(i, j)" class="imgs"></b-img>
-                      <div class="nombre">{{ getNombreActor(i, j) }}</div>
-                      <div class="nombre">{{ getRolActor(i, j) }}</div>
-                    </b-col>
-                  </b-container>
-                </template>
-                <div v-if="seguir1">
-                  {{ getNumElementosActores() }}
-                </div>
-              </b-carousel-slide>
+              <b-container class="cards">
+                <b-row class="row-eq-height">
+                  <b-carousel-slide v-for="i in paginasActores" :key="i">
+                    <template slot="img" v-for="j in numElementosActores">
+                      <b-col cols="2" :key="j" class="columna">
+                        <b-img
+                          :src="getActor(i, j)"
+                          fluid-grow
+                          class="imgs"
+                          v-if="getActor(i, j)"
+                          :alt="getNombreActor(i, j)"
+                        ></b-img>
+                        <b-img
+                          :src="getActor(i, j)"
+                          fluid-grow
+                          class="imgs"
+                          v-if="!getActor(i, j)"
+                          :alt="'No hay imagen disponible'"
+                          blank
+                          blank-color="#B0A8B9"
+                        ></b-img>
+                        <div class="nombre">{{ getNombreActor(i, j) }}</div>
+                        <div class="rol">{{ getRolActor(i, j) }}</div>
+                      </b-col>
+                    </template>
+                    <div v-if="seguir1">
+                      {{ getNumElementosActores() }}
+                    </div>
+                  </b-carousel-slide>
+                </b-row>
+              </b-container>
             </b-carousel>
 
             <h3 align="left">Equipo</h3>
@@ -50,10 +68,24 @@
               <b-carousel-slide v-for="i in paginasEquipo" :key="i">
                 <template slot="img" v-for="j in numElementosEquipo">
                   <b-container :key="j" class="cards">
-                    <b-col cols="1" class="columna">
-                      <b-img :src="getEquipo(i, j)" class="imgs"></b-img>
+                    <b-col cols="2" class="columna">
+                      <b-img
+                        :src="getEquipo(i, j)"
+                        fluid-grow
+                        class="imgs"
+                        v-if="getEquipo(i, j)"
+                        :alt="getNombreEquipo(i, j)"
+                      ></b-img>
+                      <b-img
+                        :src="getEquipo(i, j)"
+                        fluid-grow
+                        class="imgs"
+                        :alt="'No hay imagen disponible'"
+                        v-if="!getEquipo(i, j)"
+                        blank
+                      ></b-img>
                       <div class="nombre">{{ getNombreEquipo(i, j) }}</div>
-                      <div class="nombre">{{ getRolEquipo(i, j) }}</div>
+                      <div class="rol">{{ getRolEquipo(i, j) }}</div>
                     </b-col>
                   </b-container>
                 </template>
@@ -133,17 +165,15 @@ export default {
       this.infoEpisodio = JSON.parse(data);
       this.crewEpisodio = this.infoEpisodio["crew"];
 
-      for (var m = 0, k = 1; m < this.crewEpisodio.length; m += 7, k++) {
+      for (var m = 0, k = 1; m < this.crewEpisodio.length; m += 6, k++) {
         this.paginasEquipo.push(k);
       }
 
       this.contadorEquipo = this.crewEpisodio.length;
 
-      if (this.contadorEquipo < 7)
-        this.numElementosEquipo = Array.from(
-          Array(this.contadorEquipo).keys()
-        );
-      else this.numElementosEquipo = Array.from(Array(7).keys());
+      if (this.contadorEquipo < 6)
+        this.numElementosEquipo = Array.from(Array(this.contadorEquipo).keys());
+      else this.numElementosEquipo = Array.from(Array(6).keys());
 
       this.getCast()
         .then((res) => {
@@ -171,17 +201,17 @@ export default {
       var datos = JSON.parse(data);
       this.castEpisodio = datos["cast"];
 
-      for (var m = 0, k = 1; m < this.castEpisodio.length; m += 7, k++) {
+      for (var m = 0, k = 1; m < this.castEpisodio.length; m += 6, k++) {
         this.paginasActores.push(k);
       }
 
       this.contadorActores = this.castEpisodio.length;
 
-      if (this.contadorActores < 7)
+      if (this.contadorActores < 6)
         this.numElementosActores = Array.from(
           Array(this.contadorActores).keys()
         );
-      else this.numElementosActores = Array.from(Array(7).keys());
+      else this.numElementosActores = Array.from(Array(6).keys());
 
       this.datosObtenidos = true;
     },
@@ -210,58 +240,64 @@ export default {
       return this.infoEpisodio["name"];
     },
     getActor(i, j) {
-      var path = String(this.castEpisodio[(i - 1) * 7 + j]["profile_path"]);
+      var path = String(this.castEpisodio[(i - 1) * 6 + j]["profile_path"]);
 
       if (path.length > 0) {
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
-        return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreActor(i, j) {
-      return this.castEpisodio[(i - 1) * 7 + j]["name"];
+      return this.castEpisodio[(i - 1) * 6 + j]["name"];
     },
     getRolActor(i, j) {
-      return this.castEpisodio[(i - 1) * 7 + j]["character"];
+      return this.castEpisodio[(i - 1) * 6 + j]["character"];
     },
     getNumElementosActores() {
-      this.contadorActores -= 7;
+      this.contadorActores -= 6;
 
-      if (this.contadorActores > 0 && this.contadorActores < 7) this.numElementosActores = Array.from(Array(this.contadorActores).keys());
+      if (this.contadorActores > 0 && this.contadorActores < 6)
+        this.numElementosActores = Array.from(
+          Array(this.contadorActores).keys()
+        );
       else if (this.contadorActores <= 0) {
         this.seguir1 = false;
-        if (this.castEpisodio.length < 7)
-            this.numElementosActores = Array.from(Array(this.castEpisodio.length).keys()
-        );
-        else this.numElementosActores = Array.from(Array(7).keys());
-      } else this.numElementosActores = Array.from(Array(7).keys());
+        if (this.castEpisodio.length < 6)
+          this.numElementosActores = Array.from(
+            Array(this.castEpisodio.length).keys()
+          );
+        else this.numElementosActores = Array.from(Array(6).keys());
+      } else this.numElementosActores = Array.from(Array(6).keys());
     },
     getEquipo(i, j) {
-      var path = String(this.crewEpisodio[(i - 1) * 7 + j]["profile_path"]);
+      var path = String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]);
 
       if (path != "null") {
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
-        return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreEquipo(i, j) {
-      return this.crewEpisodio[(i - 1) * 7 + j]["name"];
+      return this.crewEpisodio[(i - 1) * 6 + j]["name"];
     },
     getRolEquipo(i, j) {
-      return this.crewEpisodio[(i - 1) * 7 + j]["job"];
+      return this.crewEpisodio[(i - 1) * 6 + j]["job"];
     },
     getNumElementosEquipo() {
-      this.contadorEquipo -= 7;
+      this.contadorEquipo -= 6;
 
-      if (this.contadorEquipo > 0 && this.contadorEquipo < 7) this.numElementosEquipo = Array.from(Array(this.contadorEquipo).keys());
+      if (this.contadorEquipo > 0 && this.contadorEquipo < 6)
+        this.numElementosEquipo = Array.from(Array(this.contadorEquipo).keys());
       else if (this.contadorEquipo <= 0) {
         this.seguir2 = false;
-        if (this.crewEpisodio.length < 7)
-            this.numElementosEquipo = Array.from(Array(this.crewEpisodio.length).keys()
-        );
-        else this.numElementosEquipo = Array.from(Array(7).keys());
-      } else this.numElementosEquipo = Array.from(Array(7).keys());
+        if (this.crewEpisodio.length < 6)
+          this.numElementosEquipo = Array.from(
+            Array(this.crewEpisodio.length).keys()
+          );
+        else this.numElementosEquipo = Array.from(Array(6).keys());
+      } else this.numElementosEquipo = Array.from(Array(6).keys());
     },
   },
 };
@@ -283,18 +319,33 @@ li {
 a {
   color: #42b983;
 }
-.poster {
-  margin-top: 2em;
-}
 .imgs {
   width: 4em;
 }
 .columna {
   float: left;
-  margin-left: 1.5em;
 }
 .cards {
   width: 100%;
-  margin-left: 1em;
+}
+h1 {
+  font-weight: bolder;
+}
+h3 {
+  font-weight: bold;
+}
+.nombre {
+  margin-top: 1em;
+  color: #4b4453;
+  font-size: small;
+  font-weight: bold;
+}
+.rol {
+  margin-top: 1em;
+  color: #4b4453;
+  font-size: small;
+}
+.actores {
+  margin-top: 1em;
 }
 </style>

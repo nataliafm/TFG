@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-      <b-navbar toggleable="lg" type="dark" variant="info" fixed="top">
+      <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top">
         <b-navbar-brand>LOGO</b-navbar-brand>
         <b-navbar-toggle></b-navbar-toggle>
 

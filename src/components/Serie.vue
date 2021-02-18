@@ -6,19 +6,13 @@
     <div v-if="!obtenido2 && terminaCargar1">
       {{ obtenerCreadores() }}
     </div>
-
     <b-container
       :v-if="obtenido1 && obtenido2 && terminaCargar1 && terminaCargar2"
     >
       <b-row>
-        <b-col cols="3">
+        <b-col cols="3" class="mt-4">
           <div v-if="terminaCargar1">
-            <b-img
-              :src="getPoster()"
-              :alt="getTitulo()"
-              width="200px"
-              class="poster"
-            />
+            <b-img :src="getPoster()" :alt="getTitulo()" fluid-grow class="poster" />
             <div class="proveedores">
               <b-button :href="providers['link']" class="enlaceStream"
                 >Comprar / stream</b-button
@@ -27,7 +21,7 @@
           </div>
         </b-col>
 
-        <b-col cols="7">
+        <b-col cols="7" class="mt-4">
           <div class="descripcion">
             <h1 align="left">{{ resultado["name"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
@@ -39,24 +33,25 @@
             <h3 align="left">Creadores</h3>
 
             <b-carousel controls :interval="9999999" class="actores">
-              <b-carousel-slide v-for="i in paginas" :key="i" >
+              <b-carousel-slide v-for="i in paginas" :key="i" v-once>
                 <template slot="img" v-for="j in numElementos">
                   <b-container :key="j" class="cards">
-                    <b-col cols="1" class="columna">
-                      <b-img :src="getCreador(i, j)" class="imgs"></b-img>
-                      <div class="nombre">{{ getNombreCreador(i, j) }}</div>
+                    <b-col cols="2" class="columna">
+                      <b-img :src="getCreador(i, j)" :alt="getNombreCreador(i, j)" class="fotoCreador" fluid-grow v-if="getCreador(i,j)"></b-img>
+                      <b-img :src="getCreador(i, j)" :alt="getNombreCreador(i, j)" class="fotoCreador" fluid-grow v-if="!getCreador(i,j)" blank></b-img>
+                      <h6 class="nombre">{{ getNombreCreador(i, j) }}</h6>
                     </b-col>
                   </b-container>
                 </template>
                 <div v-if="seguir1">
-                  {{getNumElementos()}}
+                  {{ getNumElementos() }}
                 </div>
               </b-carousel-slide>
             </b-carousel>
           </div>
         </b-col>
 
-        <b-col cols="2">
+        <b-col cols="2" class="mt-4">
           <b-button-group vertical class="botones">
             <b-button class="boton">Añadir a series empezadas</b-button>
             <b-button class="boton">Añadir a series pendientes</b-button>
@@ -71,21 +66,42 @@
           >
             <h3 align="left">Temporadas</h3>
             <b-carousel controls :interval="9999999" class="actores">
-              <b-carousel-slide v-for="i in paginasTemporadas" :key="i" v-once>
-                <template slot="img" v-for="j in numTemporada">
-                  <b-container :key="j">
-                    <b-col cols="1" class="columna2">
-                      <router-link :to="{path:'/temporada', query: { id: getIdTemporada(), numero: getNumeroTemporada(i, j), nombre: getTitulo()}}">
-                        <b-img rounded width="150px" class="posterTemporada" :src="getPosterTemporada(i, j)"></b-img>
-                      </router-link>
-                      <div>{{ getNombreTemporada(i, j) }}</div>
-                    </b-col>
-                  </b-container>
-                </template>
-                <div v-if="seguir">
-                  {{getNumTemporada()}}
-                </div>
-              </b-carousel-slide>
+              <b-container>
+                <b-row class="fila">
+                  <b-carousel-slide
+                    v-for="i in paginasTemporadas"
+                    :key="i"
+                    v-once
+                  >
+                    <template slot="img" v-for="j in numTemporada">
+                      <b-col cols="2" class="columna" :key="j">
+                        <router-link
+                          :to="{
+                            path: '/temporada',
+                            query: {
+                              id: getIdTemporada(),
+                              numero: getNumeroTemporada(i, j),
+                              nombre: getTitulo(),
+                            },
+                          }"
+                        >
+                          <b-img
+                            rounded
+                            class="posterTemporada"
+                            :src="getPosterTemporada(i, j)"
+                            :alt="'Temporada ' + getNumeroTemporada(i, j)"
+                            fluid-grow
+                          ></b-img>
+                        </router-link>
+                        <div class="nombreTemporada">{{ getNombreTemporada(i, j) }}</div>
+                      </b-col>
+                    </template>
+                    <div v-if="seguir">
+                      {{ getNumTemporada() }}
+                    </div>
+                  </b-carousel-slide>
+                </b-row>
+              </b-container>
             </b-carousel>
           </div>
         </b-col>
@@ -124,12 +140,12 @@ export default {
     };
   },
   methods: {
-    getIdTemporada(){
+    getIdTemporada() {
       var _this = this;
       return _this.$route.query.id;
     },
-    getNumeroTemporada(i, j){
-      return this.temporadas[(i - 1) * 5 + j]["season_number"];
+    getNumeroTemporada(i, j) {
+      return this.temporadas[(i - 1) * 6 + j]["season_number"];
     },
     success1(data) {
       console.log("Success callback: " + data);
@@ -150,14 +166,14 @@ export default {
 
       console.log(this.temporadas[1]["name"]);
 
-      for (var m = 0, k = 1; m < this.temporadas.length; m += 5, k++) {
+      for (var m = 0, k = 1; m < this.temporadas.length; m += 6, k++) {
         this.paginasTemporadas.push(k);
       }
 
       console.log(this.paginasTemporadas[0]);
 
-      if (this.contadorTemporadas >= 5) {
-        this.numTemporada = Array.from(Array(5).keys());
+      if (this.contadorTemporadas >= 6) {
+        this.numTemporada = Array.from(Array(6).keys());
       } else {
         this.numTemporada = Array.from(Array(this.contadorTemporadas).keys());
       }
@@ -213,9 +229,9 @@ export default {
       );
     },
     getNumPaginas() {
-      console.log("ekjrngkejrg " + (Math.floor(this.creadores.length / 7) + 1));
+      console.log("ekjrngkejrg " + (Math.floor(this.creadores.length / 6) + 1));
       if (this.finLoop) return String(0);
-      else return String(Math.floor(this.creadores.length / 7) + 1);
+      else return String(Math.floor(this.creadores.length / 6) + 1);
     },
     getNumCreadores() {
       return this.creadores.length;
@@ -231,7 +247,7 @@ export default {
 
       this.creadores = c;
 
-      for (var m = 0, k = 1; m < this.creadores.length; m += 7, k++) {
+      for (var m = 0, k = 1; m < this.creadores.length; m += 6, k++) {
         this.paginas.push(k);
       }
 
@@ -243,8 +259,8 @@ export default {
 
       this.contador = this.creadores.length;
 
-      if (this.contador < 7) this.numElementos = Array.from(Array(aux).keys());
-      else this.numElementos = Array.from(Array(7).keys());
+      if (this.contador < 6) this.numElementos = Array.from(Array(aux).keys());
+      else this.numElementos = Array.from(Array(6).keys());
 
       this.obtenido2 = true;
       return " hola";
@@ -256,26 +272,30 @@ export default {
     },
     getNumElementos() {
       var aux = this.contador;
-      this.contador -= 7;
+      this.contador -= 6;
 
       console.log("wgekjgekjr   " + aux);
 
-      if (aux > 0 && aux < 7) this.numElementos = Array.from(Array(aux).keys());
+      if (aux > 0 && aux < 6) this.numElementos = Array.from(Array(aux).keys());
       else if (aux <= 0) {
         this.finLoop = true;
         this.seguir1 = false;
-      } else this.numElementos = Array.from(Array(7).keys());
+      } else this.numElementos = Array.from(Array(6).keys());
     },
     getNumTemporada() {
       var aux = this.contadorTemporadas;
-      this.contadorTemporadas -= 5;
+      this.contadorTemporadas -= 6;
 
       console.log("ekrjngekjrg    " + aux);
-      if (aux > 0 && aux < 5)
-      this.numTemporada = Array.from(Array(aux).keys());
+      if (aux > 0 && aux < 6) this.numTemporada = Array.from(Array(aux).keys());
       else if (aux <= 0) {
         this.seguir = false;
-      } else this.numTemporada = Array.from(Array(5).keys());
+        if (this.resultado["seasons"].length >= 6) {
+          this.numTemporada = Array.from(Array(6).keys());
+        } else {
+          this.numTemporada = Array.from(Array(this.contadorTemporadas).keys());
+        }
+      } else this.numTemporada = Array.from(Array(6).keys());
 
       console.log("numTemporada " + this.numTemporada);
     },
@@ -297,32 +317,33 @@ export default {
       console.log("Error callback: " + data);
     },
     getCreador(i, j) {
-      var path = String(this.pathFotos[(i - 1) * 7 + j]);
+      var path = String(this.pathFotos[(i - 1) * 6 + j]);
 
       if (path != "NODISPONIBLE") {
         return (
           "https://image.tmdb.org/t/p/original" +
-          String(this.pathFotos[(i - 1) * 7 + j])
+          String(this.pathFotos[(i - 1) * 6 + j])
         );
       } else {
-        return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+        return false;
+        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     acabarLoop() {},
     getNombreCreador(i, j) {
-      return this.creadores[(i - 1) * 7 + j]["name"];
+      return this.creadores[(i - 1) * 6 + j]["name"];
     },
     getPosterTemporada(i, j) {
-      console.log(i - 1, j, (i - 1) * 5 + j);
-      console.log(this.temporadas[(i - 1) * 5 + j]["poster_path"]);
+      console.log(i - 1, j, (i - 1) * 6 + j);
+      console.log(this.temporadas[(i - 1) * 6 + j]["poster_path"]);
       return (
         "https://image.tmdb.org/t/p/original" +
-        String(this.temporadas[(i - 1) * 5 + j]["poster_path"])
+        String(this.temporadas[(i - 1) * 6 + j]["poster_path"])
       );
     },
     getNombreTemporada(i, j) {
-      console.log(i - 1, j, (i - 1) * 5 + j, "fea");
-      return this.temporadas[(i - 1) * 5 + j]["name"];
+      console.log(i - 1, j, (i - 1) * 6 + j, "fea");
+      return this.temporadas[(i - 1) * 6 + j]["name"];
     },
   },
 };
@@ -345,47 +366,45 @@ li {
 a {
   color: #42b983;
 }
-.poster {
-  margin-top: 2em;
-}
-.descripcion {
-  margin-top: 2em;
-}
-.botones {
-  margin-left: 2em;
-  margin-top: 2em;
-}
 .boton {
   margin-bottom: 1em;
 }
 .proveedores {
   margin-top: 2em;
-  width: 200px;
+  width: 100%;
   display: inline-block;
 }
 .enlaceStream {
-  width: 200px;
+  width: 100%;
   color: white;
-}
-.imgs {
-  width: 4em;
 }
 .columna {
   float: left;
-  margin-left: 1.5em;
 }
-.cards {
-  width: 100%;
-  margin-left: 1em;
+h1 {
+  font-weight: bolder;
 }
-.temporadas {
-  margin-left: 2em;
+h3 {
+  font-weight: bold;
+}
+.fila {
+  margin: auto;
+}
+.nombreTemporada {
+  margin-top: 1em;
+  color: #4B4453;
+  font-weight: bold;
+  font-size: small;
+}
+.nombre {
+  margin-top: 1em;
+  color: #4B4453;
+  font-size: small;
 }
 .posterTemporada {
-  float: left;
+  max-height: 200px;
 }
-.columna2 {
-  float: left;
-  margin-left: 6em;
+.fotoCreador {
+  max-height: 200px;
 }
 </style>

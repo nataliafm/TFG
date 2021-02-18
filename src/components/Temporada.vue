@@ -6,31 +6,33 @@
 
     <b-container v-if="datosObtenidos">
       <b-row>
-        <b-col cols="3">
+        <b-col cols="3" class="mt-4">
           <div>
             <b-img
               :src="getPoster()"
               :alt="getTituloSerie()"
               width="200px"
               class="poster"
+              fluid-grow
             />
           </div>
         </b-col>
-        <b-col cols="9">
+        <b-col cols="9" class="mt-4">
           <div class="descripcion">
             <h1 align="left">{{getTituloSerie()}}: Temporada {{ resultado["season_number"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
           </div>
           <h3 align="left">Capítulos</h3>
           <b-card-group class="capitulos" v-for="i in numCapitulos" :key="i">
-            <b-card class="carta" :img-src="getPath(i)" img-left>
+            <b-card class="carta">
               <b-card-body>
+                <b-img :src="getPath(i)" :alt="'Imagen episodio ' + getNumCapitulo(i)" fluid-grow class="imagen"></b-img>
                 <router-link :to="{name:'episodio', query: { id: getIdSerie(), nombre: getTitulo(), temp: getNumeroTemporada(), num: getNumCapitulo(i)}, params: {pathPoster: getPoster()}}">
-                  <b-card-title>{{
+                  <b-card-title id="titulo">{{
                     resultado["episodes"][i]["name"]
                   }}</b-card-title>
                 </router-link>
-                <b-card-sub-title>{{
+                <b-card-sub-title>Fecha de estreno: {{
                   resultado["episodes"][i]["air_date"]
                 }}</b-card-sub-title>
                 <b-card-text>{{
@@ -142,13 +144,7 @@ li {
   margin: 0 10px;
 }
 a {
-  color: #42b983;
-}
-.poster {
-  margin-top: 2em;
-}
-.descripcion {
-  margin-top: 2em;
+  color: #4B4453;
 }
 .capitulos {
   width: 100%;
@@ -163,8 +159,21 @@ a {
   color: rgb(0, 0, 0);
   border: none;
   width: 100% !important;
-  height: 200px !important;
+  height: 100% !important;
   object-fit: cover;
+  margin-top: 1em;
+  font-size: small;
+}
+h1 {
+  font-weight: bolder;
+}
+h3 {
+  font-weight: bold;
+}
+.imagen {
+  max-width: 400px;
+}
+#titulo {
   margin-top: 1em;
 }
 </style>
