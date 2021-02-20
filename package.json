@@ -17,7 +17,8 @@
     "themoviedb-javascript-library": "^3.0.3",
     "vue": "^2.6.12",
     "vue-firestore": "^0.3.30",
-    "vue-router": "^3.5.1"
+    "vue-router": "^3.5.1",
+    "vuelidate": "^0.7.6"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

@@ -15,7 +15,13 @@
               type="correo"
               placeholder="Introduce tu e-mail"
               required
+              :v-model="$v.form.email.$model"
+              :state="validateState('email')"
+              aria-describedby="error-email"
             ></b-form-input>
+            <b-form-invalid-feedback id="error-email">
+              Debes introducir un correo válido
+            </b-form-invalid-feedback>
           </b-form-group>
 
           <b-form-group
@@ -30,9 +36,17 @@
               type="password"
               placeholder="Introduce tu contraseña"
               required
+              :v-model="$v.form.password.$model"
+              :state="validateState('password')"
+              aria-describedby="error-password"
             ></b-form-input>
+            <b-form-invalid-feedback id="error-password">
+              Debes introducir una contraseña
+            </b-form-invalid-feedback>
           </b-form-group>
-          <b-button type="submit" variant="primary">Submit</b-button>
+          <div v-if="emailIncorrecto" style="color: red;"> El e-mail que ha introducido no se corresponde con una cuenta </div>
+          <div v-if="passIncorrecta" style="color: red;"> La contraseña que ha introducido es incorrecta </div>
+          <b-button type="submit" variant="primary">Enviar</b-button>
         </b-form>
       </div>
     </div>
@@ -41,8 +55,11 @@
 
 <script>
 import firebase from "firebase";
+import { validationMixin } from "vuelidate";
+import { required, email} from 'vuelidate/lib/validators'
 
 export default {
+  mixins: [validationMixin],
   name: "Login",
   props: {},
   data() {
@@ -52,7 +69,19 @@ export default {
         password: "",
       },
       show: true,
+      emailIncorrecto: false,
+      passIncorrecta: false,
     };
+  },
+  validations: {
+    form: {
+      email: {
+        required, email
+      },
+      password: {
+        required
+      }
+    }
   },
   methods: {
     entrar() {
@@ -66,9 +95,21 @@ export default {
           console.log("Success");
           _this.$router.push({ path: "/" });
         })
-        .catch(function (error) {
-          console.error("Error: ", error);
+        .catch(function (err) {
+          _this.emailIncorrecto = false;
+          _this.passIncorrecta = false;
+
+          console.error("Error: ", err);
+          var error = err.code;
+          switch (error) {
+            case "auth/user-not-found": _this.emailIncorrecto = true; break;
+            case "auth/wrong-password": _this.passIncorrecta = true; break;
+          }
         });
+    },
+    validateState(name) {
+      const { $invalid } = this.$v.form[name];
+      return !$invalid;
     },
   },
 };
@@ -94,8 +135,8 @@ a {
   width: 50%;
   margin: auto;
   margin-top: 7%;
-  background-color: rgb(155, 155, 155);
-  color: white;
+  background-color: #4B4453;
+  color: #B0A8B9;
   padding-top: 1%;
   padding-bottom: 1%;
 }

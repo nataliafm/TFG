@@ -32,7 +32,7 @@
       <div v-if="!terminado">
         {{ obtenerSeries() }}
       </div>
-      <b-card-group deck v-if="terminado">
+      <b-card-group v-if="terminado">
         <b-card class="card" title-tag="h6">
           <router-link :to="{path:'/serie', query: { id: getId(0) }}">
             <b-card-img :src="getPoster(0)" :alt="getTitulo(0)"/>
@@ -210,9 +210,6 @@ a {
   width: 100%;
   height: 200px;
   object-fit:scale-down;
-}
-.columna {
-  float: left;
 }
 .banner {
   color: #4B4453;

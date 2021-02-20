@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import firebase from 'firebase'
 import VueFirestore from 'vue-firestore';
 import App from './App.vue'
+import Vuelidate from 'vuelidate'
 
 import Registro from "./components/Registro.vue";
 import Login from "./components/Login.vue";
@@ -28,12 +29,13 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueRouter);
 Vue.use(VueFirestore);
+Vue.use(Vuelidate);
 
 const router = new VueRouter({
   mode: 'history',
