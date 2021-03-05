@@ -12,6 +12,7 @@ import Inicio from "./components/Inicio.vue";
 import Serie from "./components/Serie.vue";
 import Temporada from "./components/Temporada.vue";
 import Episodio from "./components/Episodio.vue";
+import Perfil from "./components/Perfil.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -47,6 +48,7 @@ const router = new VueRouter({
     { path: '/serie', name: 'serie', component: Serie },
     { path: '/temporada', name: 'temporada', component: Temporada, props: true },
     { path: '/episodio', name: 'episodio', component: Episodio, props: true },
+    { path: '/perfil', name: 'perfil', component: Perfil },
   ]
 });
 

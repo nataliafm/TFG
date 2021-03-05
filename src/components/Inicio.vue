@@ -2,7 +2,6 @@
   <div class="inicio" v-bind:userstate="estaLogueado()">
     <div v-if="userstate">
       Bienvenido, {{ username }}
-      <b-button v-on:click="logout()">Log out</b-button>
       <InicioRegistrado />
     </div>
     <div v-if="!userstate">
