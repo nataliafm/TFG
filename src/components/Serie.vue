@@ -6,13 +6,21 @@
     <div v-if="!obtenido2 && terminaCargar1">
       {{ obtenerCreadores() }}
     </div>
+    <div v-if="!capitulosObtenidos || tempGuardada != aniadirTemporada">
+      {{ getCapitulos() }}
+    </div>
     <b-container
       :v-if="obtenido1 && obtenido2 && terminaCargar1 && terminaCargar2"
     >
       <b-row>
         <b-col cols="3" class="mt-4">
           <div v-if="terminaCargar1">
-            <b-img :src="getPoster()" :alt="getTitulo()" fluid-grow class="poster" />
+            <b-img
+              :src="getPoster()"
+              :alt="getTitulo()"
+              fluid-grow
+              class="poster"
+            />
             <div class="proveedores">
               <b-button :href="providers['link']" class="enlaceStream"
                 >Comprar / stream</b-button
@@ -37,8 +45,21 @@
                 <template slot="img" v-for="j in numElementos">
                   <b-container :key="j" class="cards">
                     <b-col cols="2" class="columna">
-                      <b-img :src="getCreador(i, j)" :alt="getNombreCreador(i, j)" class="fotoCreador" fluid-grow v-if="getCreador(i,j)"></b-img>
-                      <b-img :src="getCreador(i, j)" :alt="getNombreCreador(i, j)" class="fotoCreador" fluid-grow v-if="!getCreador(i,j)" blank></b-img>
+                      <b-img
+                        :src="getCreador(i, j)"
+                        :alt="getNombreCreador(i, j)"
+                        class="fotoCreador"
+                        fluid-grow
+                        v-if="getCreador(i, j)"
+                      ></b-img>
+                      <b-img
+                        :src="getCreador(i, j)"
+                        :alt="getNombreCreador(i, j)"
+                        class="fotoCreador"
+                        fluid-grow
+                        v-if="!getCreador(i, j)"
+                        blank
+                      ></b-img>
                       <h6 class="nombre">{{ getNombreCreador(i, j) }}</h6>
                     </b-col>
                   </b-container>
@@ -53,7 +74,46 @@
 
         <b-col cols="2" class="mt-4">
           <b-button-group vertical class="botones">
-            <b-button class="boton">Añadir a series empezadas</b-button>
+            <b-dropdown class="boton" text="Añadir a series empezadas">
+              <b-dropdown-form @submit.prevent="enviarSerie">
+                <b-form-group
+                  id="temporada"
+                  label="Temporada: "
+                  label-for="input-temporada"
+                  description=""
+                >
+                  <b-form-input
+                    v-model="aniadirTemporada"
+                    list="temporadas"
+                  ></b-form-input>
+                  <datalist id="temporadas">
+                    <option v-for="t in temporadas" :key="t">
+                      {{ t.season_number }}
+                    </option>
+                  </datalist>
+                </b-form-group>
+
+                <b-form-group
+                  id="capitulo"
+                  label="Capítulo: "
+                  label-for="input-capitulo"
+                  description=""
+                  v-if="aniadirTemporada != ''"
+                >
+                  <b-form-input
+                    v-model="aniadirCapitulo"
+                    list="capitulos"
+                  ></b-form-input>
+                  <datalist id="capitulos">
+                    <option v-for="ca in capitulos" :key="ca">
+                      {{ ca.episode_number }}
+                    </option>
+                  </datalist>
+                </b-form-group>
+                <b-button type="enviarSerie" variant="primary">Enviar</b-button>
+              </b-dropdown-form>
+            </b-dropdown>
+            <!--<b-button class="boton">Añadir a series empezadas</b-button>-->
             <b-button class="boton">Añadir a series pendientes</b-button>
           </b-button-group>
         </b-col>
@@ -93,7 +153,9 @@
                             fluid-grow
                           ></b-img>
                         </router-link>
-                        <div class="nombreTemporada">{{ getNombreTemporada(i, j) }}</div>
+                        <div class="nombreTemporada">
+                          {{ getNombreTemporada(i, j) }}
+                        </div>
                       </b-col>
                     </template>
                     <div v-if="seguir">
@@ -113,6 +175,7 @@
 <script>
 import themoviedb from "themoviedb-javascript-library";
 import getUserLocales from "get-user-locale";
+import firebase from "firebase";
 
 export default {
   name: "Serie",
@@ -137,6 +200,11 @@ export default {
       numElementos: [],
       seguir: true,
       seguir1: true,
+      aniadirTemporada: "",
+      aniadirCapitulo: "",
+      capitulos: [],
+      capitulosObtenidos: false,
+      tempGuardada: "",
     };
   },
   methods: {
@@ -345,6 +413,51 @@ export default {
       console.log(i - 1, j, (i - 1) * 6 + j, "fea");
       return this.temporadas[(i - 1) * 6 + j]["name"];
     },
+    getCapitulos() {
+      if (this.aniadirTemporada != "")
+        themoviedb.tvSeasons.getById(
+          { id: this.getIdTemporada(), season_number: this.aniadirTemporada },
+          this.success4,
+          this.error4
+        );
+    },
+    success4(data) {
+      console.log("Success callback: " + data);
+      console.log("llega");
+
+      var aux = JSON.parse(data);
+      this.capitulos = aux["episodes"];
+      this.capitulosObtenidos = true;
+      this.tempGuardada = this.aniadirTemporada;
+    },
+    error4(data) {
+      console.log("Error callback: " + data);
+    },
+    enviarSerie(){
+      var db = firebase.firestore();
+      var ident = firebase.auth().currentUser.uid;
+      console.log(this.aniadirTemporada, this.aniadirCapitulo);
+      var id = this.getIdTemporada();
+
+      var serie = {};
+      serie[id] = {temp: this.aniadirTemporada, cap: this.aniadirCapitulo};
+
+      db.collection("Usuario")
+          .doc(ident)
+          .set(
+            {
+              seriesEmpezadas: firebase.firestore.FieldValue.arrayUnion(serie)
+            },
+            { merge: true }
+          )
+          .then(function () {
+            console.log("Operación realizada correctamente");
+          })
+          .catch(function (error) {
+            console.log("Error writing document: ", error);
+          });
+
+    }
   },
 };
 </script>
@@ -392,13 +505,13 @@ h3 {
 }
 .nombreTemporada {
   margin-top: 1em;
-  color: #4B4453;
+  color: #4b4453;
   font-weight: bold;
   font-size: small;
 }
 .nombre {
   margin-top: 1em;
-  color: #4B4453;
+  color: #4b4453;
   font-size: small;
 }
 .posterTemporada {

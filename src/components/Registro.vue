@@ -112,12 +112,12 @@ export default {
     submit() {
       var d = this.form;
       var _this = this;
-
+      
       firebase.auth()
         .createUserWithEmailAndPassword(d.email, d.password)
         .then(function() {
-          this.emailEnUso = false;
-          
+          _this.emailEnUso = false;
+
           var ident = firebase.auth().currentUser.uid;
           var db = firebase.firestore();
 
@@ -126,18 +126,20 @@ export default {
             .doc(ident)
             .set({
               idUsuario: ident,
-              email: d.email,
               username: d.username,
               pais: "",
               fotoPerfil: "",
-              descripcion: ""
+              descripcion: "",
+              nombre: "",
+              seriesFavoritas: "",
+              seriesEmpezadas: ""
             })
             .then(function () {
               console.log("Document successfully written!");
               _this.$router.push({path: '/'});
             })
             .catch(function (error) {
-              console.error("Error writing document: ", error);
+              console.log("Error writing document: ", error);
             });
         })
         .catch((err) => {
