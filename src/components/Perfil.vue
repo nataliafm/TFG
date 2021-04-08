@@ -1,9 +1,9 @@
 <template>
   <div class="perfil">
-    <div v-if="!datosObtenidos">
+    <div v-if="!datosObtenidos && !datosObtenidosFav">
       {{ obtenerDatosUsuario() }}
     </div>
-    <b-container v-if="datosObtenidos">
+    <b-container v-if="datosObtenidos && datosObtenidosFav">
       <b-row cols="3" align-v="stretch">
         <b-col cols="2" class="mt-4">
           <b-img rounded="circle" fluid :src="getURLperfil()"></b-img>
@@ -73,6 +73,50 @@
               </b-row>
             </b-container>
           </b-carousel>
+
+          <h3 align="left">Series favoritas</h3>
+          <b-carousel controls :interval="9999999" class="actores" v-if="renderFav">
+            <b-container class="cards">
+              <b-row class="row-eq-height">
+                <b-carousel-slide v-for="i in paginasFavoritas" :key="i">
+                  <template slot="img" v-for="j in numElementosFavoritas">
+                    <b-col cols="2" :key="j" class="columna">
+                      <router-link
+                        :to="{path:'/serie', query: { id: getIdFavoritas(i, j) }}"
+                      >
+                        <b-img
+                          :src="getSerieFav(i, j)"
+                          fluid-grow
+                          class="imgs"
+                          v-if="getSerieFav(i, j)"
+                          :alt="getNombreSerieFav(i, j)"
+                        ></b-img>
+                        <b-img
+                          :src="getSerieFav(i, j)"
+                          fluid-grow
+                          class="imgs"
+                          v-if="!getSerieFav(i, j)"
+                          :alt="'No hay imagen disponible'"
+                          blank
+                          blank-color="#B0A8B9"
+                        ></b-img>
+                      </router-link>
+                      <b-container>
+                        <b-row cols="1" align-v="stretch">
+                          <b-col>
+                            <div class="nombre">{{ getNombreSerieFav(i, j) }}</div>
+                          </b-col>
+                        </b-row>
+                      </b-container>
+                    </b-col>
+                  </template>
+                  <div v-if="seguir2">
+                    {{ getNumElementosFavoritas() }}
+                  </div>
+                </b-carousel-slide>
+              </b-row>
+            </b-container>
+          </b-carousel>
         </b-col>
         <b-col cols="2"></b-col>
       </b-row>
@@ -96,6 +140,13 @@ export default {
       seguir1: true,
       seriesE: [],
       contadorEmpezadas: "",
+      seguir2: true,
+      paginasFavoritas: [],
+      numElementosFavoritas: "",
+      seriesF: [],
+      contadorFavoritas: "",
+      datosObtenidosFav: false,
+      renderFav: true,
     };
   },
   methods: {
@@ -138,6 +189,41 @@ export default {
     error1(data) {
       console.log("Error: ", data);
     },
+    obtenerSeriePorIDFav(num) {
+      console.log(num);
+      var idSeries = this.datosUsuario.seriesFavoritas;
+      console.log(this.datosUsuario.seriesFavoritas);
+      var parsedobj = JSON.parse(JSON.stringify(idSeries));
+
+      themoviedb.tv.getById(
+        { id: Object.keys(parsedobj[1])[0] },
+        this.exito2,
+        this.error1
+      );
+    },
+    exito2(data) {
+      console.log("Exito: ", data);
+      var datos = JSON.parse(data);
+      var series = JSON.parse(
+        JSON.stringify(this.datosUsuario.seriesFavoritas)
+      );
+
+      var llaves = series.keys();
+
+      for (const i of llaves) {
+        if (Object.keys(series[i])[0] == datos["id"]) {
+          this.seriesF[i] = {
+            id: datos["id"],
+            foto: datos["poster_path"],
+            nombre: datos["name"],
+          };
+        }
+      }
+
+      if (this.seriesF.length == this.datosUsuario.seriesFavoritas.length) {
+        this.datosObtenidosFav = true;
+      }
+    },
     obtenerDatosUsuario() {
       var _this = this;
       var ident = firebase.auth().currentUser.uid;
@@ -171,6 +257,34 @@ export default {
 
             for (const key of idSeries) {
               _this.obtenerSeriePorID(key);
+            }
+            var seriesFav = JSON.parse(JSON.stringify(_this.datosUsuario.seriesFavoritas));
+            if (seriesFav.length != 0){
+              for (
+                var n = 0, j = 1;
+                n < _this.datosUsuario.seriesFavoritas.length;
+                n += 6, j++
+              ) {
+                _this.paginasFavoritas.push(j);
+              }
+
+              _this.contadorFavoritas = _this.datosUsuario.seriesFavoritas.length;
+
+              if (_this.contadorFavoritas < 6)
+                _this.numElementosFavoritas = Array.from(
+                  Array(_this.contadorFavoritas).keys()
+                );
+              else _this.numElementosFavoritas = Array.from(Array(6).keys());
+
+              var idSeriesF = _this.datosUsuario.seriesFavoritas.keys();
+
+              for (const key of idSeriesF) {
+                _this.obtenerSeriePorIDFav(key);
+              }
+            }
+            else{
+              _this.renderFav = false;
+              _this.datosObtenidosFav = true;
             }
           } else {
             console.log("No such document!");
@@ -233,15 +347,47 @@ export default {
         else this.numElementosEmpezadas = Array.from(Array(6).keys());
       } else this.numElementosEmpezadas = Array.from(Array(6).keys());
     },
-    getIdSerie(i, j){
+    getIdSerie(i, j) {
       return this.seriesE[(i - 1) * 6 + j].id;
     },
-    getNumeroTemporada(i, j){
+    getNumeroTemporada(i, j) {
       return this.seriesE[(i - 1) * 6 + j].temp;
     },
-    getNumCapitulo(i, j){
+    getNumCapitulo(i, j) {
       return this.seriesE[(i - 1) * 6 + j].cap;
-    }
+    },
+
+
+    getSerieFav(i, j) {
+      console.log(i - 1, j, (i - 1) * 6 + j);
+      console.log(this.seriesF[0]);
+      var path = String(this.seriesF[(i - 1) * 6 + j].foto);
+
+      if (path.length > 0) {
+        return "https://image.tmdb.org/t/p/original" + path;
+      } else {
+        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+      }
+    },
+    getNombreSerieFav(i, j) {
+      return this.seriesF[(i - 1) * 6 + j].nombre;
+    },
+    getNumElementosFavoritas() {
+      this.contadorFavoritas -= 6;
+
+      if (this.contadorFavoritas > 0 && this.contadorFavoritas < 6)
+        this.numElementosFavoritas = Array.from(
+          Array(this.contadorFavoritas).keys()
+        );
+      else if (this.contadorFavoritas <= 0) {
+        this.seguir1 = false;
+        if (this.datosUsuario.contadorFavoritas.length < 6)
+          this.contadorFavoritas = Array.from(
+            Array(this.datosUsuario.contadorFavoritas.length).keys()
+          );
+        else this.numElementosFavoritas = Array.from(Array(6).keys());
+      } else this.numElementosFavoritas = Array.from(Array(6).keys());
+    },
   },
 };
 </script>

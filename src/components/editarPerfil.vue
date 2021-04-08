@@ -151,11 +151,20 @@
                 v-model="form.serie"
                 placeholder="Busca una serie"
                 list="listaBusqueda"
-                @input="actualizarLista()"
+                type="search"
+                v-on:keyup="actualizarLista()"
               ></b-form-input>
               <datalist id="listaBusqueda">
-                <option v-for="serie in series" :key="serie">{{ serie }}</option>
+                <option v-for="serie in series" :key="serie">
+                  {{ serie.name }}
+                </option>
               </datalist>
+              <b-input-group-append>
+                <b-button v-on:click="elegirItem()">Añadir</b-button>
+              </b-input-group-append>
+              <div>
+                {{seriesFavoritas}}
+              </div>
             </b-form-group>
           </b-col>
         </b-row>
@@ -185,7 +194,7 @@ export default {
         nombre: "",
         pais: "",
         username: "",
-        seriesFavoritas: "",
+        seriesFavoritas: {},
       },
       datosObtenidos: false,
       password: "",
@@ -196,11 +205,12 @@ export default {
       nombre: "",
       pais: "",
       username: "",
-      seriesFavoritas: "",
+      seriesFavoritas: {},
       usernameEnUso: false,
       show: true,
       file1: "",
       series: [],
+      serieElegida: [],
       paises: [
         "Afghanistan",
         "Albania",
@@ -451,6 +461,9 @@ export default {
             console.log("No such document!");
           }
         })
+        .then(() => {
+          console.log(_this.seriesFavoritas);
+        })
         .catch((error) => {
           console.log("Error getting document:", error);
         });
@@ -475,7 +488,7 @@ export default {
       var db = firebase.firestore();
       var _this = this;
 
-      var nombre, username, descripcion, pais, correo;
+      var nombre, username, descripcion, pais, correo, seriesFavoritas;
       if (this.$v.form.nombre.$model == "") nombre = this.nombre;
       else nombre = this.$v.form.nombre.$model;
 
@@ -491,25 +504,27 @@ export default {
       if (this.form.email == "") correo = this.email;
       else correo = this.form.email;
 
-      console.log(this.file1);
-      if (this.file1){
-        var ref = firebase.storage().ref();
-        var path = ref.child('images/' + this.file1.name);
+      seriesFavoritas = this.seriesFavoritas;
 
-        path.put(this.file1).then(function(snapshot){
+      console.log(this.file1);
+      if (this.file1) {
+        var ref = firebase.storage().ref();
+        var path = ref.child("images/" + this.file1.name);
+
+        path.put(this.file1).then(function (snapshot) {
           console.log("archivo subido");
-          snapshot.ref.getDownloadURL().then(function(url){
+          snapshot.ref.getDownloadURL().then(function (url) {
             db.collection("Usuario")
-            .doc(ident)
-            .set(
-              {
-                fotoPerfil: url,
-              },
-              { merge: true }
-            )
-            .then(function () {
-              console.log("documento escrito");
-            });
+              .doc(ident)
+              .set(
+                {
+                  fotoPerfil: url,
+                },
+                { merge: true }
+              )
+              .then(function () {
+                console.log("documento escrito");
+              });
           });
         });
       }
@@ -518,7 +533,8 @@ export default {
         this.nombre != nombre ||
         this.pais != pais ||
         this.username != username ||
-        this.descripcion != descripcion
+        this.descripcion != descripcion ||
+        this.seriesFavoritas != seriesFavoritas
       ) {
         db.collection("Usuario")
           .doc(ident)
@@ -528,6 +544,7 @@ export default {
               username: username,
               descripcion: descripcion,
               pais: pais,
+              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(seriesFavoritas)
             },
             { merge: true }
           )
@@ -590,7 +607,7 @@ export default {
               _this.$router.push({ path: "/perfil" });
             }
             */
-           _this.$router.push({ path: "/perfil" });
+            _this.$router.push({ path: "/perfil" });
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);
@@ -601,16 +618,29 @@ export default {
       const { $invalid } = this.$v.form[name];
       return !$invalid;
     },
-  },
-  exito1(data){
-    var d = JSON.parse(data);
-    console.log("Exito: ", d);
-  },
-  error1(data){
-    console.log("Error: ", data);
-  },
-  actualizarLista(){
-    themoviedb.tv.getMulti({query: this.form.serie}, this.exito1, this.error1);
+    exito1(data) {
+      var d = JSON.parse(data);
+      console.log("Exito: ", d.results.slice(0, 5));
+      this.series = d.results.slice(0, 5);
+    },
+    error1(data) {
+      console.log("Error: ", data);
+    },
+    actualizarLista() {
+      console.log("hola");
+      themoviedb.search.getTv(
+        { query: this.form.serie },
+        this.exito1,
+        this.error1
+      );
+    },
+    elegirItem(){
+      this.serieElegida = this.series;
+
+      var aux = {};
+      aux[this.serieElegida[0].id] = {nombre: this.form.serie};
+      this.seriesFavoritas.push(aux);
+    }
   },
 };
 </script>
