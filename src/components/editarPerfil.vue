@@ -206,6 +206,7 @@ export default {
       pais: "",
       username: "",
       seriesFavoritas: {},
+      longOriginal: "",
       usernameEnUso: false,
       show: true,
       file1: "",
@@ -448,14 +449,16 @@ export default {
         .then((doc) => {
           if (doc.exists) {
             console.log("Document data:", doc.data());
-            _this.descripcion = doc.data().descripcion;
+            var data = JSON.parse(JSON.stringify(doc.data()));
+            _this.descripcion = data.descripcion;
             _this.email = email;
-            _this.fotoPerfil = doc.data().fotoPerfil;
+            _this.fotoPerfil = data.fotoPerfil;
             _this.idUsuario = ident;
-            _this.nombre = doc.data().nombre;
-            _this.pais = doc.data().pais;
-            _this.username = doc.data().username;
-            _this.seriesFavoritas = doc.data().seriesFavoritas;
+            _this.nombre = data.nombre;
+            _this.pais = data.pais;
+            _this.username = data.username;
+            _this.seriesFavoritas = data.seriesFavoritas;
+            _this.longOriginal = _this.seriesFavoritas.length;
             _this.datosObtenidos = true;
           } else {
             console.log("No such document!");
@@ -506,7 +509,9 @@ export default {
 
       seriesFavoritas = this.seriesFavoritas;
 
-      console.log(this.file1);
+      console.log(this.seriesFavoritas);
+      console.log(JSON.parse(JSON.stringify(this.seriesFavoritas)));
+      console.log("eksrgnekrjgner");
       if (this.file1) {
         var ref = firebase.storage().ref();
         var path = ref.child("images/" + this.file1.name);
@@ -534,7 +539,7 @@ export default {
         this.pais != pais ||
         this.username != username ||
         this.descripcion != descripcion ||
-        this.seriesFavoritas != seriesFavoritas
+        this.seriesFavoritas.length != this.longOriginal
       ) {
         db.collection("Usuario")
           .doc(ident)
@@ -544,7 +549,7 @@ export default {
               username: username,
               descripcion: descripcion,
               pais: pais,
-              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(seriesFavoritas)
+              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(...JSON.parse(JSON.stringify(seriesFavoritas)))
             },
             { merge: true }
           )

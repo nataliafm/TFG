@@ -75,7 +75,7 @@
           </b-carousel>
 
           <h3 align="left">Series favoritas</h3>
-          <b-carousel controls :interval="9999999" class="actores" v-if="renderFav">
+          <b-carousel controls :interval="9999999" class="actores" v-if="renderFav" v-once>
             <b-container class="cards">
               <b-row class="row-eq-height">
                 <b-carousel-slide v-for="i in paginasFavoritas" :key="i">
@@ -117,6 +117,7 @@
               </b-row>
             </b-container>
           </b-carousel>
+
         </b-col>
         <b-col cols="2"></b-col>
       </b-row>
@@ -196,7 +197,7 @@ export default {
       var parsedobj = JSON.parse(JSON.stringify(idSeries));
 
       themoviedb.tv.getById(
-        { id: Object.keys(parsedobj[1])[0] },
+        { id: Object.keys(parsedobj[num])[0] },
         this.exito2,
         this.error1
       );
@@ -220,7 +221,11 @@ export default {
         }
       }
 
+      console.log("yuppp", this.seriesF.length);
+      console.log("holaaa", this.datosUsuario.seriesFavoritas.length);
+
       if (this.seriesF.length == this.datosUsuario.seriesFavoritas.length) {
+        console.log("llegaaaaa");
         this.datosObtenidosFav = true;
       }
     },
@@ -259,7 +264,7 @@ export default {
               _this.obtenerSeriePorID(key);
             }
             var seriesFav = JSON.parse(JSON.stringify(_this.datosUsuario.seriesFavoritas));
-            if (seriesFav.length != 0){
+            if (seriesFav.length > 0){
               for (
                 var n = 0, j = 1;
                 n < _this.datosUsuario.seriesFavoritas.length;
@@ -381,13 +386,16 @@ export default {
         );
       else if (this.contadorFavoritas <= 0) {
         this.seguir1 = false;
-        if (this.datosUsuario.contadorFavoritas.length < 6)
+        if (this.datosUsuario.seriesFavoritas.length < 6)
           this.contadorFavoritas = Array.from(
-            Array(this.datosUsuario.contadorFavoritas.length).keys()
+            Array(this.datosUsuario.seriesFavoritas.length).keys()
           );
         else this.numElementosFavoritas = Array.from(Array(6).keys());
       } else this.numElementosFavoritas = Array.from(Array(6).keys());
     },
+    getIdFavoritas(i, j){
+      return this.seriesF[(i - 1) * 6 + j].id;
+    }
   },
 };
 </script>
