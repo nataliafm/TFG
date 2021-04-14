@@ -21,7 +21,7 @@
         <b-col cols="2"></b-col>
         <b-col cols="8">
           <h3 align="left">Series empezadas</h3>
-          <b-carousel controls :interval="9999999" class="actores">
+          <b-carousel controls :interval="9999999" class="actores" v-if="renderEmp" v-once>
             <b-container class="cards">
               <b-row class="row-eq-height">
                 <b-carousel-slide v-for="i in paginasEmpezadas" :key="i">
@@ -148,6 +148,7 @@ export default {
       contadorFavoritas: "",
       datosObtenidosFav: false,
       renderFav: true,
+      renderEmp: true,
     };
   },
   methods: {
@@ -242,27 +243,35 @@ export default {
             console.log("Document data:", doc.data());
             _this.datosUsuario = doc.data();
 
-            for (
-              var m = 0, k = 1;
-              m < _this.datosUsuario.seriesEmpezadas.length;
-              m += 6, k++
-            ) {
-              _this.paginasEmpezadas.push(k);
+            var seriesEmp = JSON.parse(JSON.stringify(_this.datosUsuario.seriesEmpezadas));
+            if (seriesEmp.length > 0){
+              for (
+                var m = 0, k = 1;
+                m < _this.datosUsuario.seriesEmpezadas.length;
+                m += 6, k++
+              ) {
+                _this.paginasEmpezadas.push(k);
+              }
+
+              _this.contadorEmpezadas = _this.datosUsuario.seriesEmpezadas.length;
+
+              if (_this.contadorEmpezadas < 6)
+                _this.numElementosEmpezadas = Array.from(
+                  Array(_this.contadorEmpezadas).keys()
+                );
+              else _this.numElementosEmpezadas = Array.from(Array(6).keys());
+
+              var idSeries = _this.datosUsuario.seriesEmpezadas.reverse().keys();
+
+              for (const key of idSeries) {
+                _this.obtenerSeriePorID(key);
+              }
+            }
+            else{
+              _this.renderEmp = false;
+              _this.datosObtenidos = true;
             }
 
-            _this.contadorEmpezadas = _this.datosUsuario.seriesEmpezadas.length;
-
-            if (_this.contadorEmpezadas < 6)
-              _this.numElementosEmpezadas = Array.from(
-                Array(_this.contadorEmpezadas).keys()
-              );
-            else _this.numElementosEmpezadas = Array.from(Array(6).keys());
-
-            var idSeries = _this.datosUsuario.seriesEmpezadas.reverse().keys();
-
-            for (const key of idSeries) {
-              _this.obtenerSeriePorID(key);
-            }
             var seriesFav = JSON.parse(JSON.stringify(_this.datosUsuario.seriesFavoritas));
             if (seriesFav.length > 0){
               for (

@@ -147,24 +147,29 @@
               label-for="input-fav"
               description=""
             >
-              <b-form-input
-                v-model="form.serie"
-                placeholder="Busca una serie"
-                list="listaBusqueda"
-                type="search"
-                v-on:keyup="actualizarLista()"
-              ></b-form-input>
-              <datalist id="listaBusqueda">
-                <option v-for="serie in series" :key="serie">
-                  {{ serie.name }}
-                </option>
-              </datalist>
-              <b-input-group-append>
-                <b-button v-on:click="elegirItem()">Añadir</b-button>
-              </b-input-group-append>
-              <div>
-                {{seriesFavoritas}}
-              </div>
+              <b-container>
+                <b-row>
+                  <b-col cols="10">
+                  <b-form-input
+                    v-model="form.serie"
+                    placeholder="Busca una serie"
+                    list="listaBusqueda"
+                    type="search"
+                    v-on:keyup="actualizarLista()"
+                  ></b-form-input>
+                  <datalist id="listaBusqueda">
+                    <option v-for="serie in series" :key="serie">
+                      {{ serie.name }}
+                    </option>
+                  </datalist>
+                  </b-col>
+                  <b-col cols="2">
+                  <b-input-group-append>
+                    <b-button v-on:click="elegirItem()">Añadir</b-button>
+                  </b-input-group-append>
+                  </b-col>
+                </b-row>
+              </b-container>
             </b-form-group>
           </b-col>
         </b-row>
@@ -549,7 +554,9 @@ export default {
               username: username,
               descripcion: descripcion,
               pais: pais,
-              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(...JSON.parse(JSON.stringify(seriesFavoritas)))
+              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(
+                ...JSON.parse(JSON.stringify(seriesFavoritas))
+              ),
             },
             { merge: true }
           )
@@ -563,7 +570,7 @@ export default {
                 .updateEmail(correo)
                 .then(function () {
                   console.log("Document successfully written!");
-                  /*
+                  
                   if (_this.$v.form.password.$model != "") {
                     user
                       .updatePassword(_this.$v.form.password.$model)
@@ -577,7 +584,7 @@ export default {
                   } else {
                     _this.$router.push({ path: "/perfil" });
                   }
-                  */
+                  
                   _this.$router.push({ path: "/perfil" });
                 })
                 .catch(function (error) {
@@ -597,7 +604,7 @@ export default {
           .updateEmail(correo)
           .then(function () {
             console.log("Document successfully written!");
-            /*
+            
             if (_this.$v.form.password.$model != "") {
               user
                 .updatePassword(_this.$v.form.password.$model)
@@ -611,7 +618,7 @@ export default {
             } else {
               _this.$router.push({ path: "/perfil" });
             }
-            */
+            
             _this.$router.push({ path: "/perfil" });
           })
           .catch(function (error) {
@@ -632,20 +639,19 @@ export default {
       console.log("Error: ", data);
     },
     actualizarLista() {
-      console.log("hola");
       themoviedb.search.getTv(
         { query: this.form.serie },
         this.exito1,
         this.error1
       );
     },
-    elegirItem(){
+    elegirItem() {
       this.serieElegida = this.series;
 
       var aux = {};
-      aux[this.serieElegida[0].id] = {nombre: this.form.serie};
+      aux[this.serieElegida[0].id] = { nombre: this.form.serie };
       this.seriesFavoritas.push(aux);
-    }
+    },
   },
 };
 </script>
