@@ -9,6 +9,10 @@
     <div v-if="!capitulosObtenidos || tempGuardada != aniadirTemporada">
       {{ getCapitulos() }}
     </div>
+    <div v-if="!serieComprobada">
+      {{ comprobarSerie() }}
+    </div>
+
     <b-container
       :v-if="obtenido1 && obtenido2 && terminaCargar1 && terminaCargar2"
     >
@@ -73,8 +77,8 @@
         </b-col>
 
         <b-col cols="2" class="mt-4">
-          <b-button-group vertical class="botones">
-            <b-dropdown class="boton" text="Añadir a series empezadas">
+          <b-button-group vertical class="botones" v-if="serieComprobada">
+            <b-dropdown class="boton" text="Añadir a series empezadas" v-if="!serieEstaEmpezada">
               <b-dropdown-form @submit.prevent="enviarSerie">
                 <b-form-group
                   id="temporada"
@@ -205,6 +209,8 @@ export default {
       capitulos: [],
       capitulosObtenidos: false,
       tempGuardada: "",
+      serieEstaEmpezada: false,
+      serieComprobada: false,
     };
   },
   methods: {
@@ -457,7 +463,37 @@ export default {
             console.log("Error writing document: ", error);
           });
 
-    }
+    },
+    comprobarSerie(){
+      var _this = this;
+      var ident = firebase.auth().currentUser.uid;
+      var db = firebase.firestore();
+      var ref = db.collection("Usuario").doc(ident);
+
+      ref
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("Document data:", doc.data());
+            var datosUsuario = JSON.parse(JSON.stringify(doc.data()));
+
+            var empezadas = datosUsuario.seriesEmpezadas;
+            console.log(empezadas);
+
+            for (var i = 0 ; i < empezadas.length ; i++){
+              if (Object.keys(empezadas[i])[0] == _this.getIdTemporada()){
+                _this.serieEstaEmpezada = true;
+              }
+            }
+
+            _this.serieComprobada = true;
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
+
+    },
   },
 };
 </script>

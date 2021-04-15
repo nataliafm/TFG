@@ -150,24 +150,27 @@
               <b-container>
                 <b-row>
                   <b-col cols="10">
-                  <b-form-input
-                    v-model="form.serie"
-                    placeholder="Busca una serie"
-                    list="listaBusqueda"
-                    type="search"
-                    v-on:keyup="actualizarLista()"
-                  ></b-form-input>
-                  <datalist id="listaBusqueda">
-                    <option v-for="serie in series" :key="serie">
-                      {{ serie.name }}
-                    </option>
-                  </datalist>
+                    <b-form-input
+                      v-model="form.serie"
+                      placeholder="Busca una serie"
+                      list="listaBusqueda"
+                      type="search"
+                      v-on:keyup="actualizarLista()"
+                    ></b-form-input>
+                    <datalist id="listaBusqueda">
+                      <option v-for="serie in series" :key="serie">
+                        {{ serie.name }}
+                      </option>
+                    </datalist>
                   </b-col>
                   <b-col cols="2">
-                  <b-input-group-append>
-                    <b-button v-on:click="elegirItem()">Añadir</b-button>
-                  </b-input-group-append>
+                    <b-input-group-append>
+                      <b-button v-on:click="elegirItem()">Añadir</b-button>
+                    </b-input-group-append>
                   </b-col>
+                  <div v-if="serieYaEsta" style="color: red">
+                    Esta serie ya está en tu lista de favoritos
+                  </div>
                 </b-row>
               </b-container>
             </b-form-group>
@@ -217,6 +220,7 @@ export default {
       file1: "",
       series: [],
       serieElegida: [],
+      serieYaEsta: false,
       paises: [
         "Afghanistan",
         "Albania",
@@ -570,7 +574,7 @@ export default {
                 .updateEmail(correo)
                 .then(function () {
                   console.log("Document successfully written!");
-                  
+
                   if (_this.$v.form.password.$model != "") {
                     user
                       .updatePassword(_this.$v.form.password.$model)
@@ -584,7 +588,7 @@ export default {
                   } else {
                     _this.$router.push({ path: "/perfil" });
                   }
-                  
+
                   _this.$router.push({ path: "/perfil" });
                 })
                 .catch(function (error) {
@@ -604,7 +608,7 @@ export default {
           .updateEmail(correo)
           .then(function () {
             console.log("Document successfully written!");
-            
+
             if (_this.$v.form.password.$model != "") {
               user
                 .updatePassword(_this.$v.form.password.$model)
@@ -618,7 +622,7 @@ export default {
             } else {
               _this.$router.push({ path: "/perfil" });
             }
-            
+
             _this.$router.push({ path: "/perfil" });
           })
           .catch(function (error) {
@@ -648,9 +652,28 @@ export default {
     elegirItem() {
       this.serieElegida = this.series;
 
-      var aux = {};
-      aux[this.serieElegida[0].id] = { nombre: this.form.serie };
-      this.seriesFavoritas.push(aux);
+      var id = this.serieElegida[0].id;
+      var yaEsta = false;
+
+      var empezadas = this.seriesFavoritas;
+      console.log(empezadas);
+
+      for (var i = 0; i < empezadas.length; i++) {
+        if (Object.keys(empezadas[i])[0] == id) {
+          yaEsta = true;
+        }
+      }
+
+      if (!yaEsta){
+        var aux = {};
+        aux[id] = { nombre: this.form.serie };
+        this.seriesFavoritas.push(aux);
+        this.serieYaEsta = false;
+      }
+      else{
+        this.serieYaEsta = true;
+      }
+
     },
   },
 };

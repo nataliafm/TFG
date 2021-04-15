@@ -222,11 +222,7 @@ export default {
         }
       }
 
-      console.log("yuppp", this.seriesF.length);
-      console.log("holaaa", this.datosUsuario.seriesFavoritas.length);
-
       if (this.seriesF.length == this.datosUsuario.seriesFavoritas.length) {
-        console.log("llegaaaaa");
         this.datosObtenidosFav = true;
       }
     },
