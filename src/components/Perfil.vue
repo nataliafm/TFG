@@ -20,7 +20,7 @@
       <b-row>
         <b-col cols="2"></b-col>
         <b-col cols="8">
-          <h3 align="left">Series empezadas</h3>
+          <h3 align="left" v-if="renderEmp">Series empezadas</h3>
           <b-carousel controls :interval="9999999" class="actores" v-if="renderEmp" v-once>
             <b-container class="cards">
               <b-row class="row-eq-height">
@@ -74,7 +74,7 @@
             </b-container>
           </b-carousel>
 
-          <h3 align="left">Series favoritas</h3>
+          <h3 align="left" class="mt-4">Series favoritas</h3>
           <b-carousel controls :interval="9999999" class="actores" v-if="renderFav" v-once>
             <b-container class="cards">
               <b-row class="row-eq-height">
@@ -154,11 +154,11 @@ export default {
   methods: {
     obtenerSeriePorID(num) {
       console.log(num);
-      var idSeries = this.datosUsuario.seriesEmpezadas.reverse();
+      var idSeries = this.datosUsuario.seriesEmpezadas;
       var parsedobj = JSON.parse(JSON.stringify(idSeries));
 
       themoviedb.tv.getById(
-        { id: Object.keys(parsedobj[1])[0] },
+        { id: Object.keys(parsedobj[num])[0] },
         this.exito1,
         this.error1
       );
@@ -257,7 +257,7 @@ export default {
                 );
               else _this.numElementosEmpezadas = Array.from(Array(6).keys());
 
-              var idSeries = _this.datosUsuario.seriesEmpezadas.reverse().keys();
+              var idSeries = _this.datosUsuario.seriesEmpezadas.keys();
 
               for (const key of idSeries) {
                 _this.obtenerSeriePorID(key);

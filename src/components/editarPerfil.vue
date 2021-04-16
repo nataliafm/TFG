@@ -593,6 +593,10 @@ export default {
                 })
                 .catch(function (error) {
                   console.log("Error writing document: ", error);
+                  var err = error.code;
+                  switch (err) {
+                    case "auth/email-already-in-use": this.emailEnUso = true; break;
+          }
                 });
             } else {
               _this.$router.push({ path: "/perfil" });

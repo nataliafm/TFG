@@ -117,7 +117,6 @@
                 <b-button type="enviarSerie" variant="primary">Enviar</b-button>
               </b-dropdown-form>
             </b-dropdown>
-            <!--<b-button class="boton">Añadir a series empezadas</b-button>-->
             <b-button class="boton">Añadir a series pendientes</b-button>
           </b-button-group>
         </b-col>
@@ -518,6 +517,7 @@ a {
 .boton {
   margin-bottom: 1em;
 }
+
 .proveedores {
   margin-top: 2em;
   width: 100%;
