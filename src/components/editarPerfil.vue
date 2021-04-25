@@ -171,6 +171,14 @@
                   <div v-if="serieYaEsta" style="color: red">
                     Esta serie ya está en tu lista de favoritos
                   </div>
+                  <b-list-group >
+                    <b-list-group horizontal="md" v-for="i in seriesFavoritas.length" :key="i">
+                      <b-list-group-item class="border-0 align-items-center w-100">
+                        <div class="nombreSerie">{{ Object.values(JSON.parse(JSON.stringify(seriesFavoritas))[i-1])[0]["nombre"] }}</div>
+                        <b-button class="botonQuitar ml-1" v-on:click="eliminarItem(i-1)">X</b-button>
+                      </b-list-group-item>
+                    </b-list-group>
+                  </b-list-group>
                 </b-row>
               </b-container>
             </b-form-group>
@@ -558,8 +566,7 @@ export default {
               username: username,
               descripcion: descripcion,
               pais: pais,
-              seriesFavoritas: firebase.firestore.FieldValue.arrayUnion(
-                ...JSON.parse(JSON.stringify(seriesFavoritas))
+              seriesFavoritas: JSON.parse(JSON.stringify(seriesFavoritas)
               ),
             },
             { merge: true }
@@ -677,8 +684,20 @@ export default {
       else{
         this.serieYaEsta = true;
       }
-
     },
+    eliminarItem(i) {
+      var id = Object.keys(JSON.parse(JSON.stringify(this.seriesFavoritas))[i])[0];
+      var series = JSON.parse(JSON.stringify(this.seriesFavoritas));
+      var indice = -1;
+
+      var llaves = this.seriesFavoritas.keys();
+      for (const k of llaves){
+        if (Object.keys(series[k]) == id)
+          indice = k;
+      }
+
+      this.seriesFavoritas.splice(indice, 1);
+    }
   },
 };
 </script>
@@ -698,5 +717,20 @@ li {
 }
 a {
   color: #42b983;
+}
+.list-item {
+  color: rgb(0, 0, 0);
+  border: none;
+}
+.textoLista {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.nombreSerie {
+  float: left;
+}
+.botonQuitar {
+  float: right;
 }
 </style>

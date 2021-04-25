@@ -58,9 +58,9 @@
                       </router-link>
                       <b-container>
                         <b-row cols="1" align-v="stretch">
-                          <b-col>
-                            <div class="nombre">{{ getNombreSerie(i, j) }}</div>
-                            <div class="rol">{{ getTemporada(i, j) }}</div>
+                          <b-col class="align-items-center h-100">
+                            <div class="nombre h-100 d-inline-block">{{ getNombreSerie(i, j) }}</div>
+                            <div class="rol h-100 d-inline-block">{{ getTemporada(i, j) }}</div>
                           </b-col>
                         </b-row>
                       </b-container>
