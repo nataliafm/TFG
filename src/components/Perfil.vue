@@ -21,7 +21,7 @@
         <b-col cols="2"></b-col>
         <b-col cols="8">
           <h3 align="left" v-if="renderEmp">Series empezadas</h3>
-          <b-carousel controls :interval="9999999" class="actores" v-if="renderEmp" v-once>
+          <b-carousel controls :interval="9999999" class="actores" v-if="renderEmp">
             <b-container class="cards">
               <b-row class="row-eq-height">
                 <b-carousel-slide v-for="i in paginasEmpezadas" :key="i">

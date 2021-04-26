@@ -174,8 +174,8 @@
                   <b-list-group >
                     <b-list-group horizontal="md" v-for="i in seriesFavoritas.length" :key="i">
                       <b-list-group-item class="border-0 align-items-center w-100">
-                        <div class="nombreSerie">{{ Object.values(JSON.parse(JSON.stringify(seriesFavoritas))[i-1])[0]["nombre"] }}</div>
-                        <b-button class="botonQuitar ml-1" v-on:click="eliminarItem(i-1)">X</b-button>
+                        <div class="nombreSerie mt-1">{{ Object.values(JSON.parse(JSON.stringify(seriesFavoritas))[i-1])[0]["nombre"] }}</div>
+                        <b-button class="botonQuitar ml-4" v-on:click="eliminarItem(i-1)">X</b-button>
                       </b-list-group-item>
                     </b-list-group>
                   </b-list-group>
@@ -526,9 +526,6 @@ export default {
 
       seriesFavoritas = this.seriesFavoritas;
 
-      console.log(this.seriesFavoritas);
-      console.log(JSON.parse(JSON.stringify(this.seriesFavoritas)));
-      console.log("eksrgnekrjgner");
       if (this.file1) {
         var ref = firebase.storage().ref();
         var path = ref.child("images/" + this.file1.name);
@@ -582,7 +579,7 @@ export default {
                 .then(function () {
                   console.log("Document successfully written!");
 
-                  if (_this.$v.form.password.$model != "") {
+                  if (_this.$v.form.password.$model != undefined) {
                     user
                       .updatePassword(_this.$v.form.password.$model)
                       .then(function () {
@@ -612,7 +609,7 @@ export default {
           .catch(function (error) {
             console.log("Error writing document: ", error);
           });
-      } else if (this.email != correo || this.$v.form.password.$model != "") {
+      } else if (this.email != correo || this.$v.form.password.$model != undefined) {
         var user = firebase.auth().currentUser;
 
         user
