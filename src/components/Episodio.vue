@@ -28,39 +28,26 @@
           <div class="creadoPor" v-if="datosObtenidos">
             <h3 align="left">Actores</h3>
 
-            <b-carousel controls :interval="9999999" class="actores">
-              <b-container class="cards">
-                <b-row class="row-eq-height">
-                  <b-carousel-slide v-for="i in paginasActores" :key="i">
-                    <template slot="img" v-for="j in numElementosActores">
-                      <b-col cols="2" :key="j" class="columna">
-                        <b-img
-                          :src="getActor(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="getActor(i, j)"
-                          :alt="getNombreActor(i, j)"
-                        ></b-img>
-                        <b-img
-                          :src="getActor(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="!getActor(i, j)"
-                          :alt="'No hay imagen disponible'"
-                          blank
-                          blank-color="#B0A8B9"
-                        ></b-img>
-                        <div class="nombre">{{ getNombreActor(i, j) }}</div>
-                        <div class="rol">{{ getRolActor(i, j) }}</div>
-                      </b-col>
-                    </template>
-                    <div v-if="seguir1">
-                      {{ getNumElementosActores() }}
-                    </div>
-                  </b-carousel-slide>
-                </b-row>
-              </b-container>
-            </b-carousel>
+            <b-pagination
+              v-model="currentPageA"
+              :total-rows="getNumActores()"
+              :per-page="perPage"
+              aria-controls="actores"
+              class="mt-2"
+            ></b-pagination>
+            <b-card-group id="actores">
+              <b-card v-for="j in numElementosActores" :key="j" class="border-0">
+                <b-card-img
+                  :src="getActor(currentPageA, j)"
+                  :alt="getNombreActor(currentPageA, j)"
+                ></b-card-img>
+                <b-card-text class="nombre">{{ getNombreActor(currentPageA, j) }}</b-card-text>
+                <b-card-text class="rol">{{ getRolActor(currentPageA, j) }}</b-card-text>
+              </b-card>
+              <div v-if="seguir1">
+                {{ getNumElementosActores() }}
+              </div>
+            </b-card-group>
 
             <h3 align="left">Equipo</h3>
 
@@ -128,9 +115,18 @@ export default {
       paginasEquipo: [],
       numElementosEquipo: "",
       seguir2: true,
+      currentPageA: 1,
+      currentPageE: 1,
+      perPage: 6,
     };
   },
   methods: {
+    getNumActores(){
+      return this.castEpisodio.length;
+    },
+    getNumEquipo(){
+      return this.crewEpisodio.length;
+    },
     buscarEpisodio() {
       var _this = this;
       this.poster = _this.$route.params.pathPoster;
@@ -209,7 +205,7 @@ export default {
 
       if (this.contadorActores < 6)
         this.numElementosActores = Array.from(
-          Array(this.contadorActores).keys()
+          Array(6).keys()
         );
       else this.numElementosActores = Array.from(Array(6).keys());
 
@@ -240,34 +236,33 @@ export default {
       return this.infoEpisodio["name"];
     },
     getActor(i, j) {
-      var path = String(this.castEpisodio[(i - 1) * 6 + j]["profile_path"]);
-
-      if (path.length > 0) {
+      if (this.castEpisodio[(i - 1) * 6 + j] != undefined) {
+        var path = String(this.castEpisodio[(i - 1) * 6 + j]["profile_path"]);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
+        return "";
         //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreActor(i, j) {
-      return this.castEpisodio[(i - 1) * 6 + j]["name"];
+      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.castEpisodio[(i - 1) * 6 + j]["name"];
+      else return "";
     },
     getRolActor(i, j) {
-      return this.castEpisodio[(i - 1) * 6 + j]["character"];
+      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.castEpisodio[(i - 1) * 6 + j]["character"];
+      else return "";
     },
     getNumElementosActores() {
       this.contadorActores -= 6;
 
       if (this.contadorActores > 0 && this.contadorActores < 6)
         this.numElementosActores = Array.from(
-          Array(this.contadorActores).keys()
+          Array(6).keys()
         );
       else if (this.contadorActores <= 0) {
         this.seguir1 = false;
-        if (this.castEpisodio.length < 6)
-          this.numElementosActores = Array.from(
-            Array(this.castEpisodio.length).keys()
-          );
-        else this.numElementosActores = Array.from(Array(6).keys());
       } else this.numElementosActores = Array.from(Array(6).keys());
     },
     getEquipo(i, j) {

@@ -56,17 +56,8 @@
                   :src="getCreador(currentPage, j)"
                   :alt="getNombreCreador(currentPage, j)"
                   class="fotoCreador"
-                  v-if="getCreador(currentPage, j)"
+                  v-if="getExisteCreador(currentPage, j)"
                 ></b-card-img>
-                <!--
-                <b-card-img
-                  :src="getCreador(currentPage, j)"
-                  :alt="getNombreCreador(currentPage, j)"
-                  class="fotoCreador"
-                  v-if="!getCreador(currentPage, j)"
-                  blank
-                ></b-card-img>
-                -->
                 <b-card-text class="nombre">{{
                   getNombreCreador(currentPage, j)
                 }}</b-card-text>
@@ -134,6 +125,42 @@
             v-if="terminaCargar1 && obtenido2 && terminaCargar2 && obtenido1"
           >
             <h3 align="left">Temporadas</h3>
+            <b-pagination
+              v-model="currentPageT"
+              :total-rows="getNumTemporadas()"
+              :per-page="perPage"
+              aria-controls="temporadas"
+              class="mt-2"
+            ></b-pagination>
+            <b-card-group id="temporadas">
+              <b-card v-for="j in numTemporada" :key="j" class="border-0">
+                <router-link
+                  :to="{
+                    path: '/temporada',
+                    query: {
+                      id: getIdTemporada(),
+                      numero: getNumeroTemporada(currentPageT, j),
+                      nombre: getTitulo(),
+                    },
+                  }"
+                >
+                  <b-card-img
+                    :src="getPosterTemporada(currentPageT, j)"
+                    :alt="'Temporada ' + getNumeroTemporada(currentPageT, j)"
+                    class="posterTemporada"
+                    v-if="getExisteTemporada(currentPageT, j)"
+                  ></b-card-img>
+                  <b-card-img class="posterTemporada" v-else blank></b-card-img>
+                </router-link>
+                <b-card-text class="nombreTemporada">{{
+                  getNombreTemporada(currentPageT, j)
+                }}</b-card-text>
+              </b-card>
+              <div v-if="seguir">
+                {{ getNumTemporada() }}
+              </div>
+            </b-card-group>
+            <!--
             <b-carousel controls :interval="9999999" class="actores">
               <b-container>
                 <b-row class="fila">
@@ -174,6 +201,7 @@
                 </b-row>
               </b-container>
             </b-carousel>
+            -->
           </div>
         </b-col>
       </b-row>
@@ -218,15 +246,23 @@ export default {
       serieComprobada: false,
       perPage: 6,
       currentPage: 1,
+      currentPageT: 1,
     };
   },
   methods: {
+    getNumTemporadas() {
+      return this.temporadas.length;
+    },
     getIdTemporada() {
       var _this = this;
       return _this.$route.query.id;
     },
     getNumeroTemporada(i, j) {
-      return this.temporadas[(i - 1) * 6 + j]["season_number"];
+      var path = this.temporadas[(i - 1) * 6 + j];
+
+      if (path != undefined)
+        return this.temporadas[(i - 1) * 6 + j]["season_number"];
+      else return "";
     },
     success1(data) {
       console.log("Success callback: " + data);
@@ -256,7 +292,7 @@ export default {
       if (this.contadorTemporadas >= 6) {
         this.numTemporada = Array.from(Array(6).keys());
       } else {
-        this.numTemporada = Array.from(Array(this.contadorTemporadas).keys());
+        this.numTemporada = Array.from(Array(6).keys());
       }
 
       this.terminaCargar1 = true;
@@ -321,21 +357,11 @@ export default {
       var aux = this.resultado["created_by"].length;
       var c = [];
 
-      //var aaaa = this.resultado["created_by"][0];
-
       for (var o = 0; o < aux; o++) {
         var res = this.resultado["created_by"][o];
         c.push(res);
       }
-/*
-      c.push(aaaa);
-      c.push(aaaa);
-      c.push(aaaa);
-      c.push(aaaa);
-      c.push(aaaa);
-      c.push(aaaa);
-      c.push(aaaa);
-*/
+
       this.creadores = c;
 
       for (var m = 0, k = 1; m < this.creadores.length; m += 6, k++) {
@@ -377,15 +403,10 @@ export default {
       var aux = this.contadorTemporadas;
       this.contadorTemporadas -= 6;
 
-      console.log("ekrjngekjrg    " + aux);
-      if (aux > 0 && aux < 6) this.numTemporada = Array.from(Array(aux).keys());
+      console.log("JERBGJERBGJERBGVJERDVBGJRBVJERBGJHREBGJREG    " + aux);
+      if (aux > 0 && aux < 6) this.numTemporada = Array.from(Array(6).keys());
       else if (aux <= 0) {
         this.seguir = false;
-        if (this.resultado["seasons"].length >= 6) {
-          this.numTemporada = Array.from(Array(6).keys());
-        } else {
-          this.numTemporada = Array.from(Array(this.contadorTemporadas).keys());
-        }
       } else this.numTemporada = Array.from(Array(6).keys());
 
       console.log("numTemporada " + this.numTemporada);
@@ -431,17 +452,32 @@ export default {
         return "";
       }
     },
+    getExisteCreador(i, j){
+      return String(this.pathFotos[(i - 1) * 6 + j]) != undefined;
+    },
+    getExisteTemporada(i, j) {
+      return String(this.temporadas[(i - 1) * 6 + j]) != undefined;
+    },
     getPosterTemporada(i, j) {
+      var path = this.temporadas[(i - 1) * 6 + j];
+
       console.log(i - 1, j, (i - 1) * 6 + j);
-      console.log(this.temporadas[(i - 1) * 6 + j]["poster_path"]);
-      return (
-        "https://image.tmdb.org/t/p/original" +
-        String(this.temporadas[(i - 1) * 6 + j]["poster_path"])
-      );
+
+      if (path != undefined) {
+        console.log(this.temporadas[(i - 1) * 6 + j]["poster_path"]);
+        return (
+          "https://image.tmdb.org/t/p/original" +
+          String(this.temporadas[(i - 1) * 6 + j]["poster_path"])
+        );
+      } else return false;
     },
     getNombreTemporada(i, j) {
+      var path = this.temporadas[(i - 1) * 6 + j];
+
       console.log(i - 1, j, (i - 1) * 6 + j, "fea");
-      return this.temporadas[(i - 1) * 6 + j]["name"];
+
+      if (path != undefined) return this.temporadas[(i - 1) * 6 + j]["name"];
+      else return "";
     },
     getCapitulos() {
       if (this.aniadirTemporada != "")
