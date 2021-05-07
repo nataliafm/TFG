@@ -43,42 +43,48 @@
             v-if="terminaCargar1 && obtenido2 && terminaCargar2"
           >
             <h3 align="left">Creadores</h3>
-
-            <b-carousel controls :interval="9999999" class="actores">
-              <b-carousel-slide v-for="i in paginas" :key="i" v-once>
-                <template slot="img" v-for="j in numElementos">
-                  <b-container :key="j" class="cards">
-                    <b-col cols="2" class="columna">
-                      <b-img
-                        :src="getCreador(i, j)"
-                        :alt="getNombreCreador(i, j)"
-                        class="fotoCreador"
-                        fluid-grow
-                        v-if="getCreador(i, j)"
-                      ></b-img>
-                      <b-img
-                        :src="getCreador(i, j)"
-                        :alt="getNombreCreador(i, j)"
-                        class="fotoCreador"
-                        fluid-grow
-                        v-if="!getCreador(i, j)"
-                        blank
-                      ></b-img>
-                      <h6 class="nombre">{{ getNombreCreador(i, j) }}</h6>
-                    </b-col>
-                  </b-container>
-                </template>
-                <div v-if="seguir1">
-                  {{ getNumElementos() }}
-                </div>
-              </b-carousel-slide>
-            </b-carousel>
+            <b-pagination
+              v-model="currentPage"
+              :total-rows="getNumCreadores()"
+              :per-page="perPage"
+              aria-controls="creadores"
+              class="mt-2"
+            ></b-pagination>
+            <b-card-group id="creadores">
+              <b-card v-for="j in numElementos" :key="j" class="border-0">
+                <b-card-img
+                  :src="getCreador(currentPage, j)"
+                  :alt="getNombreCreador(currentPage, j)"
+                  class="fotoCreador"
+                  v-if="getCreador(currentPage, j)"
+                ></b-card-img>
+                <!--
+                <b-card-img
+                  :src="getCreador(currentPage, j)"
+                  :alt="getNombreCreador(currentPage, j)"
+                  class="fotoCreador"
+                  v-if="!getCreador(currentPage, j)"
+                  blank
+                ></b-card-img>
+                -->
+                <b-card-text class="nombre">{{
+                  getNombreCreador(currentPage, j)
+                }}</b-card-text>
+              </b-card>
+              <div v-if="seguir1">
+                {{ getNumElementos() }}
+              </div>
+            </b-card-group>
           </div>
         </b-col>
 
         <b-col cols="2" class="mt-4">
           <b-button-group vertical class="botones" v-if="serieComprobada">
-            <b-dropdown class="boton" text="Añadir a series empezadas" v-if="!serieEstaEmpezada">
+            <b-dropdown
+              class="boton"
+              text="Añadir a series empezadas"
+              v-if="!serieEstaEmpezada"
+            >
               <b-dropdown-form @submit.prevent="enviarSerie">
                 <b-form-group
                   id="temporada"
@@ -210,6 +216,8 @@ export default {
       tempGuardada: "",
       serieEstaEmpezada: false,
       serieComprobada: false,
+      perPage: 6,
+      currentPage: 1,
     };
   },
   methods: {
@@ -313,11 +321,21 @@ export default {
       var aux = this.resultado["created_by"].length;
       var c = [];
 
+      //var aaaa = this.resultado["created_by"][0];
+
       for (var o = 0; o < aux; o++) {
         var res = this.resultado["created_by"][o];
         c.push(res);
       }
-
+/*
+      c.push(aaaa);
+      c.push(aaaa);
+      c.push(aaaa);
+      c.push(aaaa);
+      c.push(aaaa);
+      c.push(aaaa);
+      c.push(aaaa);
+*/
       this.creadores = c;
 
       for (var m = 0, k = 1; m < this.creadores.length; m += 6, k++) {
@@ -332,7 +350,7 @@ export default {
 
       this.contador = this.creadores.length;
 
-      if (this.contador < 6) this.numElementos = Array.from(Array(aux).keys());
+      if (this.contador < 6) this.numElementos = Array.from(Array(6).keys());
       else this.numElementos = Array.from(Array(6).keys());
 
       this.obtenido2 = true;
@@ -349,7 +367,7 @@ export default {
 
       console.log("wgekjgekjr   " + aux);
 
-      if (aux > 0 && aux < 6) this.numElementos = Array.from(Array(aux).keys());
+      if (aux > 0 && aux < 6) this.numElementos = Array.from(Array(6).keys());
       else if (aux <= 0) {
         this.finLoop = true;
         this.seguir1 = false;
@@ -391,8 +409,9 @@ export default {
     },
     getCreador(i, j) {
       var path = String(this.pathFotos[(i - 1) * 6 + j]);
+      console.log(path);
 
-      if (path != "NODISPONIBLE") {
+      if (path != "NODISPONIBLE" && path != undefined) {
         return (
           "https://image.tmdb.org/t/p/original" +
           String(this.pathFotos[(i - 1) * 6 + j])
@@ -404,7 +423,13 @@ export default {
     },
     acabarLoop() {},
     getNombreCreador(i, j) {
-      return this.creadores[(i - 1) * 6 + j]["name"];
+      console.log("holiiiiiiiiiiii " + this.creadores[(i - 1) * 6 + j]);
+      if (this.creadores[(i - 1) * 6 + j] != undefined) {
+        return this.creadores[(i - 1) * 6 + j]["name"];
+      } else {
+        console.log("HIIIIII");
+        return "";
+      }
     },
     getPosterTemporada(i, j) {
       console.log(i - 1, j, (i - 1) * 6 + j);
@@ -438,32 +463,31 @@ export default {
     error4(data) {
       console.log("Error callback: " + data);
     },
-    enviarSerie(){
+    enviarSerie() {
       var db = firebase.firestore();
       var ident = firebase.auth().currentUser.uid;
       console.log(this.aniadirTemporada, this.aniadirCapitulo);
       var id = this.getIdTemporada();
 
       var serie = {};
-      serie[id] = {temp: this.aniadirTemporada, cap: this.aniadirCapitulo};
+      serie[id] = { temp: this.aniadirTemporada, cap: this.aniadirCapitulo };
 
       db.collection("Usuario")
-          .doc(ident)
-          .set(
-            {
-              seriesEmpezadas: firebase.firestore.FieldValue.arrayUnion(serie)
-            },
-            { merge: true }
-          )
-          .then(function () {
-            console.log("Operación realizada correctamente");
-          })
-          .catch(function (error) {
-            console.log("Error writing document: ", error);
-          });
-
+        .doc(ident)
+        .set(
+          {
+            seriesEmpezadas: firebase.firestore.FieldValue.arrayUnion(serie),
+          },
+          { merge: true }
+        )
+        .then(function () {
+          console.log("Operación realizada correctamente");
+        })
+        .catch(function (error) {
+          console.log("Error writing document: ", error);
+        });
     },
-    comprobarSerie(){
+    comprobarSerie() {
       var _this = this;
       var ident = firebase.auth().currentUser.uid;
       var db = firebase.firestore();
@@ -479,8 +503,8 @@ export default {
             var empezadas = datosUsuario.seriesEmpezadas;
             console.log(empezadas);
 
-            for (var i = 0 ; i < empezadas.length ; i++){
-              if (Object.keys(empezadas[i])[0] == _this.getIdTemporada()){
+            for (var i = 0; i < empezadas.length; i++) {
+              if (Object.keys(empezadas[i])[0] == _this.getIdTemporada()) {
                 _this.serieEstaEmpezada = true;
               }
             }
@@ -491,7 +515,6 @@ export default {
         .catch((error) => {
           console.log("Error getting document:", error);
         });
-
     },
   },
 };
@@ -553,7 +576,8 @@ h3 {
 .posterTemporada {
   max-height: 200px;
 }
-.fotoCreador {
-  max-height: 200px;
+.card {
+  color: rgb(0, 0, 0);
+  border: none;
 }
 </style>
