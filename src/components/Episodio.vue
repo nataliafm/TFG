@@ -36,13 +36,21 @@
               class="mt-2"
             ></b-pagination>
             <b-card-group id="actores">
-              <b-card v-for="j in numElementosActores" :key="j" class="border-0">
+              <b-card
+                v-for="j in numElementosActores"
+                :key="j"
+                class="border-0"
+              >
                 <b-card-img
                   :src="getActor(currentPageA, j)"
                   :alt="getNombreActor(currentPageA, j)"
                 ></b-card-img>
-                <b-card-text class="nombre">{{ getNombreActor(currentPageA, j) }}</b-card-text>
-                <b-card-text class="rol">{{ getRolActor(currentPageA, j) }}</b-card-text>
+                <b-card-text class="nombre">{{
+                  getNombreActor(currentPageA, j)
+                }}</b-card-text>
+                <b-card-text class="rol">{{
+                  getRolActor(currentPageA, j)
+                }}</b-card-text>
               </b-card>
               <div v-if="seguir1">
                 {{ getNumElementosActores() }}
@@ -51,36 +59,32 @@
 
             <h3 align="left">Equipo</h3>
 
-            <b-carousel controls :interval="9999999" class="actores">
-              <b-carousel-slide v-for="i in paginasEquipo" :key="i">
-                <template slot="img" v-for="j in numElementosEquipo">
-                  <b-container :key="j" class="cards">
-                    <b-col cols="2" class="columna">
-                      <b-img
-                        :src="getEquipo(i, j)"
-                        fluid-grow
-                        class="imgs"
-                        v-if="getEquipo(i, j)"
-                        :alt="getNombreEquipo(i, j)"
-                      ></b-img>
-                      <b-img
-                        :src="getEquipo(i, j)"
-                        fluid-grow
-                        class="imgs"
-                        :alt="'No hay imagen disponible'"
-                        v-if="!getEquipo(i, j)"
-                        blank
-                      ></b-img>
-                      <div class="nombre">{{ getNombreEquipo(i, j) }}</div>
-                      <div class="rol">{{ getRolEquipo(i, j) }}</div>
-                    </b-col>
-                  </b-container>
-                </template>
-                <div v-if="seguir2">
-                  {{ getNumElementosEquipo() }}
-                </div>
-              </b-carousel-slide>
-            </b-carousel>
+            <b-pagination
+              v-model="currentPageE"
+              :total-rows="getNumEquipo()"
+              :per-page="perPage"
+              aria-controls="equipo"
+              class="mt-2"
+            ></b-pagination>
+            <b-card-group id="equipo">
+              <b-card v-for="j in numElementosEquipo" :key="j" class="border-0">
+                <b-card-img
+                  v-if="existeEquipo(currentPageE, j)"
+                  :src="getEquipo(currentPageE, j)"
+                  :alt="getNombreEquipo(currentPageE, j)"
+                ></b-card-img>
+                <b-card-img v-else blank-src></b-card-img>
+                <b-card-text class="nombre">{{
+                  getNombreEquipo(currentPageE, j)
+                }}</b-card-text>
+                <b-card-text class="rol">{{
+                  getRolEquipo(currentPageE, j)
+                }}</b-card-text>
+              </b-card>
+              <div v-if="seguir2">
+                {{ getNumElementosEquipo() }}
+              </div>
+            </b-card-group>
           </div>
         </b-col>
       </b-row>
@@ -121,10 +125,10 @@ export default {
     };
   },
   methods: {
-    getNumActores(){
+    getNumActores() {
       return this.castEpisodio.length;
     },
-    getNumEquipo(){
+    getNumEquipo() {
       return this.crewEpisodio.length;
     },
     buscarEpisodio() {
@@ -168,7 +172,7 @@ export default {
       this.contadorEquipo = this.crewEpisodio.length;
 
       if (this.contadorEquipo < 6)
-        this.numElementosEquipo = Array.from(Array(this.contadorEquipo).keys());
+        this.numElementosEquipo = Array.from(Array(6).keys());
       else this.numElementosEquipo = Array.from(Array(6).keys());
 
       this.getCast()
@@ -204,9 +208,7 @@ export default {
       this.contadorActores = this.castEpisodio.length;
 
       if (this.contadorActores < 6)
-        this.numElementosActores = Array.from(
-          Array(6).keys()
-        );
+        this.numElementosActores = Array.from(Array(6).keys());
       else this.numElementosActores = Array.from(Array(6).keys());
 
       this.datosObtenidos = true;
@@ -258,41 +260,49 @@ export default {
       this.contadorActores -= 6;
 
       if (this.contadorActores > 0 && this.contadorActores < 6)
-        this.numElementosActores = Array.from(
-          Array(6).keys()
-        );
+        this.numElementosActores = Array.from(Array(6).keys());
       else if (this.contadorActores <= 0) {
         this.seguir1 = false;
       } else this.numElementosActores = Array.from(Array(6).keys());
     },
     getEquipo(i, j) {
-      var path = String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]);
-
-      if (path != "null") {
+      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined) {
+        var path = String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
+        return "";
         //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreEquipo(i, j) {
-      return this.crewEpisodio[(i - 1) * 6 + j]["name"];
+      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.crewEpisodio[(i - 1) * 6 + j]["name"];
+      else return "";
     },
     getRolEquipo(i, j) {
-      return this.crewEpisodio[(i - 1) * 6 + j]["job"];
+      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.crewEpisodio[(i - 1) * 6 + j]["job"];
+      else return "";
     },
     getNumElementosEquipo() {
       this.contadorEquipo -= 6;
 
       if (this.contadorEquipo > 0 && this.contadorEquipo < 6)
-        this.numElementosEquipo = Array.from(Array(this.contadorEquipo).keys());
+        this.numElementosEquipo = Array.from(Array(6).keys());
       else if (this.contadorEquipo <= 0) {
         this.seguir2 = false;
-        if (this.crewEpisodio.length < 6)
-          this.numElementosEquipo = Array.from(
-            Array(this.crewEpisodio.length).keys()
-          );
-        else this.numElementosEquipo = Array.from(Array(6).keys());
       } else this.numElementosEquipo = Array.from(Array(6).keys());
+    },
+    existeEquipo(i, j) {
+      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined) {
+        console.log(String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]));
+        console.log(
+          String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]) == "null"
+        );
+        return (
+          String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]) != "null"
+        );
+      } else return false;
     },
   },
 };

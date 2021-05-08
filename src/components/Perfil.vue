@@ -21,103 +21,95 @@
         <b-col cols="2"></b-col>
         <b-col cols="8">
           <h3 align="left" v-if="renderEmp">Series empezadas</h3>
-          <b-carousel controls :interval="9999999" class="actores" v-if="renderEmp">
-            <b-container class="cards">
-              <b-row class="row-eq-height">
-                <b-carousel-slide v-for="i in paginasEmpezadas" :key="i">
-                  <template slot="img" v-for="j in numElementosEmpezadas">
-                    <b-col cols="2" :key="j" class="columna">
-                      <router-link
-                        :to="{
-                          name: 'episodio',
-                          query: {
-                            id: getIdSerie(i, j),
-                            nombre: getNombreSerie(i, j),
-                            temp: getNumeroTemporada(i, j),
-                            num: getNumCapitulo(i, j),
-                          },
-                          params: { pathPoster: getSerie(i, j) },
-                        }"
-                      >
-                        <b-img
-                          :src="getSerie(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="getSerie(i, j)"
-                          :alt="getNombreSerie(i, j)"
-                        ></b-img>
-                        <b-img
-                          :src="getSerie(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="!getSerie(i, j)"
-                          :alt="'No hay imagen disponible'"
-                          blank
-                          blank-color="#B0A8B9"
-                        ></b-img>
-                      </router-link>
-                      <b-container>
-                        <b-row cols="1" align-v="stretch">
-                          <b-col class="align-items-center h-100">
-                            <div class="nombre h-100 d-inline-block">{{ getNombreSerie(i, j) }}</div>
-                            <div class="rol h-100 d-inline-block">{{ getTemporada(i, j) }}</div>
-                          </b-col>
-                        </b-row>
-                      </b-container>
-                    </b-col>
-                  </template>
-                  <div v-if="seguir1">
-                    {{ getNumElementosEmpezadas() }}
-                  </div>
-                </b-carousel-slide>
-              </b-row>
-            </b-container>
-          </b-carousel>
 
+          <b-pagination
+            v-model="currentPageEmpezadas"
+            :total-rows="getNumEmpezadas()"
+            :per-page="perPage"
+            aria-controls="empezadas"
+            class="mt-2"
+          ></b-pagination>
+          <b-card-group id="empezadas">
+            <b-card
+              v-for="j in numElementosEmpezadas"
+              :key="j"
+              class="border-0"
+            >
+              <router-link
+                :to="{
+                  name: 'episodio',
+                  query: {
+                    id: getIdSerie(currentPageEmpezadas, j),
+                    nombre: getNombreSerie(currentPageEmpezadas, j),
+                    temp: getNumeroTemporada(currentPageEmpezadas, j),
+                    num: getNumCapitulo(currentPageEmpezadas, j),
+                  },
+                  params: { pathPoster: getSerie(currentPageEmpezadas, j) },
+                }"
+              >
+                <b-card-img
+                  :src="getSerie(currentPageEmpezadas, j)"
+                  :alt="getNombreSerie(currentPageEmpezadas, j)"
+                ></b-card-img>
+              </router-link>
+              <b-container>
+                <b-row cols="1" align-v="stretch">
+                  <b-col class="align-items-center h-100">
+                    <div class="nombre h-100 d-inline-block">
+                      {{ getNombreSerie(currentPageEmpezadas, j) }}
+                    </div>
+                    <div class="rol h-100 d-inline-block">
+                      {{ getTemporada(currentPageEmpezadas, j) }}
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-container>
+            </b-card>
+            <div v-if="seguir1">
+              {{ getNumElementosEmpezadas() }}
+            </div>
+          </b-card-group>
+          
           <h3 align="left" class="mt-4">Series favoritas</h3>
-          <b-carousel controls :interval="9999999" class="actores" v-if="renderFav" v-once>
-            <b-container class="cards">
-              <b-row class="row-eq-height">
-                <b-carousel-slide v-for="i in paginasFavoritas" :key="i">
-                  <template slot="img" v-for="j in numElementosFavoritas">
-                    <b-col cols="2" :key="j" class="columna">
-                      <router-link
-                        :to="{path:'/serie', query: { id: getIdFavoritas(i, j) }}"
-                      >
-                        <b-img
-                          :src="getSerieFav(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="getSerieFav(i, j)"
-                          :alt="getNombreSerieFav(i, j)"
-                        ></b-img>
-                        <b-img
-                          :src="getSerieFav(i, j)"
-                          fluid-grow
-                          class="imgs"
-                          v-if="!getSerieFav(i, j)"
-                          :alt="'No hay imagen disponible'"
-                          blank
-                          blank-color="#B0A8B9"
-                        ></b-img>
-                      </router-link>
-                      <b-container>
-                        <b-row cols="1" align-v="stretch">
-                          <b-col>
-                            <div class="nombre">{{ getNombreSerieFav(i, j) }}</div>
-                          </b-col>
-                        </b-row>
-                      </b-container>
-                    </b-col>
-                  </template>
-                  <div v-if="seguir2">
-                    {{ getNumElementosFavoritas() }}
-                  </div>
-                </b-carousel-slide>
-              </b-row>
-            </b-container>
-          </b-carousel>
 
+          <b-pagination
+            v-model="currentPageFavoritas"
+            :total-rows="getNumFavoritas()"
+            :per-page="perPage"
+            aria-controls="favoritas"
+            class="mt-2"
+          ></b-pagination>
+          <b-card-group id="favoritas">
+            <b-card
+              v-for="j in numElementosFavoritas"
+              :key="j"
+              class="border-0"
+            >
+              <router-link
+                :to="{
+                  path: '/serie',
+                  query: { id: getIdFavoritas(currentPageFavoritas, j) },
+                }"
+              >
+                <b-card-img
+                  :src="getSerieFav(currentPageFavoritas, j)"
+                  :alt="getNombreSerieFav(currentPageFavoritas, j)"
+                ></b-card-img>
+              </router-link>
+              <b-container>
+                <b-row cols="1" align-v="stretch">
+                  <b-col>
+                    <div class="nombre">
+                      {{ getNombreSerieFav(currentPageFavoritas, j) }}
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-container>
+            </b-card>
+            <div v-if="seguir2">
+              {{ getNumElementosFavoritas() }}
+            </div>
+          </b-card-group>
         </b-col>
         <b-col cols="2"></b-col>
       </b-row>
@@ -149,9 +141,18 @@ export default {
       datosObtenidosFav: false,
       renderFav: true,
       renderEmp: true,
+      currentPageEmpezadas: 1,
+      currentPageFavoritas: 1,
+      perPage: 6,
     };
   },
   methods: {
+    getNumEmpezadas() {
+      return this.datosUsuario.seriesEmpezadas.length;
+    },
+    getNumFavoritas() {
+      return this.datosUsuario.seriesFavoritas.length;
+    },
     obtenerSeriePorID(num) {
       console.log(num);
       var idSeries = this.datosUsuario.seriesEmpezadas;
@@ -239,8 +240,10 @@ export default {
             console.log("Document data:", doc.data());
             _this.datosUsuario = doc.data();
 
-            var seriesEmp = JSON.parse(JSON.stringify(_this.datosUsuario.seriesEmpezadas));
-            if (seriesEmp.length > 0){
+            var seriesEmp = JSON.parse(
+              JSON.stringify(_this.datosUsuario.seriesEmpezadas)
+            );
+            if (seriesEmp.length > 0) {
               for (
                 var m = 0, k = 1;
                 m < _this.datosUsuario.seriesEmpezadas.length;
@@ -249,12 +252,11 @@ export default {
                 _this.paginasEmpezadas.push(k);
               }
 
-              _this.contadorEmpezadas = _this.datosUsuario.seriesEmpezadas.length;
+              _this.contadorEmpezadas =
+                _this.datosUsuario.seriesEmpezadas.length;
 
               if (_this.contadorEmpezadas < 6)
-                _this.numElementosEmpezadas = Array.from(
-                  Array(_this.contadorEmpezadas).keys()
-                );
+                _this.numElementosEmpezadas = Array.from(Array(6).keys());
               else _this.numElementosEmpezadas = Array.from(Array(6).keys());
 
               var idSeries = _this.datosUsuario.seriesEmpezadas.keys();
@@ -262,14 +264,15 @@ export default {
               for (const key of idSeries) {
                 _this.obtenerSeriePorID(key);
               }
-            }
-            else{
+            } else {
               _this.renderEmp = false;
               _this.datosObtenidos = true;
             }
 
-            var seriesFav = JSON.parse(JSON.stringify(_this.datosUsuario.seriesFavoritas));
-            if (seriesFav.length > 0){
+            var seriesFav = JSON.parse(
+              JSON.stringify(_this.datosUsuario.seriesFavoritas)
+            );
+            if (seriesFav.length > 0) {
               for (
                 var n = 0, j = 1;
                 n < _this.datosUsuario.seriesFavoritas.length;
@@ -278,12 +281,11 @@ export default {
                 _this.paginasFavoritas.push(j);
               }
 
-              _this.contadorFavoritas = _this.datosUsuario.seriesFavoritas.length;
+              _this.contadorFavoritas =
+                _this.datosUsuario.seriesFavoritas.length;
 
               if (_this.contadorFavoritas < 6)
-                _this.numElementosFavoritas = Array.from(
-                  Array(_this.contadorFavoritas).keys()
-                );
+                _this.numElementosFavoritas = Array.from(Array(6).keys());
               else _this.numElementosFavoritas = Array.from(Array(6).keys());
 
               var idSeriesF = _this.datosUsuario.seriesFavoritas.keys();
@@ -291,8 +293,7 @@ export default {
               for (const key of idSeriesF) {
                 _this.obtenerSeriePorIDFav(key);
               }
-            }
-            else{
+            } else {
               _this.renderFav = false;
               _this.datosObtenidosFav = true;
             }
@@ -320,87 +321,82 @@ export default {
       return this.datosUsuario.descripcion;
     },
     getSerie(i, j) {
-      console.log(i - 1, j, (i - 1) * 6 + j);
-      console.log(this.seriesE[0]);
-      var path = String(this.seriesE[(i - 1) * 6 + j].foto);
-
-      if (path.length > 0) {
+      if (this.seriesE[(i - 1) * 6 + j] != undefined) {
+        var path = String(this.seriesE[(i - 1) * 6 + j].foto);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
+        return "";
         //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreSerie(i, j) {
-      return this.seriesE[(i - 1) * 6 + j].nombre;
+      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+        return this.seriesE[(i - 1) * 6 + j].nombre;
+      else return "";
     },
     getTemporada(i, j) {
-      return (
-        "Temporada " +
-        this.seriesE[(i - 1) * 6 + j].temp +
-        ", Capítulo " +
-        this.seriesE[(i - 1) * 6 + j].cap
-      );
+      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+        return (
+          "Temporada " +
+          this.seriesE[(i - 1) * 6 + j].temp +
+          ", Capítulo " +
+          this.seriesE[(i - 1) * 6 + j].cap
+        );
+      else return "";
     },
     getNumElementosEmpezadas() {
       this.contadorEmpezadas -= 6;
 
       if (this.contadorEmpezadas > 0 && this.contadorEmpezadas < 6)
-        this.numElementosEmpezadas = Array.from(
-          Array(this.contadorEmpezadas).keys()
-        );
+        this.numElementosEmpezadas = Array.from(Array(6).keys());
       else if (this.contadorEmpezadas <= 0) {
         this.seguir1 = false;
-        if (this.datosUsuario.seriesEmpezadas.length < 6)
-          this.numElementosEmpezadas = Array.from(
-            Array(this.datosUsuario.seriesEmpezadas.length).keys()
-          );
-        else this.numElementosEmpezadas = Array.from(Array(6).keys());
       } else this.numElementosEmpezadas = Array.from(Array(6).keys());
     },
     getIdSerie(i, j) {
-      return this.seriesE[(i - 1) * 6 + j].id;
+      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+        return this.seriesE[(i - 1) * 6 + j].id;
+      else return "";
     },
     getNumeroTemporada(i, j) {
-      return this.seriesE[(i - 1) * 6 + j].temp;
+      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+        return this.seriesE[(i - 1) * 6 + j].temp;
+      else return "";
     },
     getNumCapitulo(i, j) {
-      return this.seriesE[(i - 1) * 6 + j].cap;
+      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+        return this.seriesE[(i - 1) * 6 + j].cap;
+      else return "";
     },
 
-
     getSerieFav(i, j) {
-      console.log(i - 1, j, (i - 1) * 6 + j);
-      console.log(this.seriesF[0]);
-      var path = String(this.seriesF[(i - 1) * 6 + j].foto);
-
-      if (path.length > 0) {
+      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
+        var path = String(this.seriesF[(i - 1) * 6 + j].foto);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
+        return "";
         //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreSerieFav(i, j) {
-      return this.seriesF[(i - 1) * 6 + j].nombre;
+      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
+        return this.seriesF[(i - 1) * 6 + j].nombre;
+      } else return "";
     },
     getNumElementosFavoritas() {
       this.contadorFavoritas -= 6;
 
       if (this.contadorFavoritas > 0 && this.contadorFavoritas < 6)
-        this.numElementosFavoritas = Array.from(
-          Array(this.contadorFavoritas).keys()
-        );
+        this.numElementosFavoritas = Array.from(Array(6).keys());
       else if (this.contadorFavoritas <= 0) {
-        this.seguir1 = false;
-        if (this.datosUsuario.seriesFavoritas.length < 6)
-          this.contadorFavoritas = Array.from(
-            Array(this.datosUsuario.seriesFavoritas.length).keys()
-          );
-        else this.numElementosFavoritas = Array.from(Array(6).keys());
+        this.seguir2 = false;
       } else this.numElementosFavoritas = Array.from(Array(6).keys());
     },
-    getIdFavoritas(i, j){
-      return this.seriesF[(i - 1) * 6 + j].id;
-    }
+    getIdFavoritas(i, j) {
+      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
+        return this.seriesF[(i - 1) * 6 + j].id;
+      } else return "";
+    },
   },
 };
 </script>
