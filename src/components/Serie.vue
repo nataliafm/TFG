@@ -70,7 +70,11 @@
         </b-col>
 
         <b-col cols="2" class="mt-4">
-          <b-button-group vertical class="botones" v-if="serieComprobada">
+          <b-button-group
+            vertical
+            class="botones"
+            v-if="serieComprobada"
+          >
             <b-dropdown
               class="boton"
               text="Añadir a series empezadas"
@@ -114,7 +118,7 @@
                 <b-button type="enviarSerie" variant="primary">Enviar</b-button>
               </b-dropdown-form>
             </b-dropdown>
-            <b-button class="boton">Añadir a series pendientes</b-button>
+            <b-button class="button" @click="seriePendiente()">Añadir a series pendientes</b-button>
           </b-button-group>
         </b-col>
       </b-row>
@@ -452,7 +456,7 @@ export default {
         return "";
       }
     },
-    getExisteCreador(i, j){
+    getExisteCreador(i, j) {
       return String(this.pathFotos[(i - 1) * 6 + j]) != undefined;
     },
     getExisteTemporada(i, j) {
@@ -546,6 +550,44 @@ export default {
             }
 
             _this.serieComprobada = true;
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
+    },
+    seriePendiente() {
+      var id = this.getIdTemporada();
+      console.log(id);
+
+      var ident = firebase.auth().currentUser.uid;
+      var db = firebase.firestore();
+      var ref = db.collection("Usuario").doc(ident);
+
+      ref
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("Document data:", doc.data());
+            var data = JSON.parse(JSON.stringify(doc.data()));
+            var seriesPendientes = data.seriesPendientes;
+
+            if (!seriesPendientes.includes(id))
+              seriesPendientes.push(id);
+
+            ref
+              .set({
+                seriesPendientes: seriesPendientes
+              }, { merge: true })
+              .then(function () {
+                console.log("Document successfully written!");
+              })
+              .catch(function (error) {
+                console.log("Error writing document: ", error);
+              });
+          }
+          else {
+            console.log("No such document!");
           }
         })
         .catch((error) => {

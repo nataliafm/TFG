@@ -675,6 +675,8 @@ export default {
       if (!yaEsta){
         var aux = {};
         aux[id] = { nombre: this.form.serie };
+        console.log(this.seriesFavoritas);
+        
         this.seriesFavoritas.push(aux);
         this.serieYaEsta = false;
       }

@@ -131,8 +131,9 @@ export default {
               fotoPerfil: "",
               descripcion: "",
               nombre: "",
-              seriesFavoritas: "",
-              seriesEmpezadas: ""
+              seriesFavoritas: [],
+              seriesEmpezadas: [],
+              seriesPendientes: []
             })
             .then(function () {
               console.log("Document successfully written!");
