@@ -18,7 +18,6 @@
         </b-col>
       </b-row>
       <b-row>
-        <b-col cols="2"></b-col>
         <b-col cols="8">
           <h3 align="left" v-if="renderEmp">Series empezadas</h3>
 
@@ -28,6 +27,7 @@
             :per-page="perPage"
             aria-controls="empezadas"
             class="mt-2"
+            v-if="renderEmp"
           ></b-pagination>
           <b-card-group id="empezadas">
             <b-card
@@ -69,15 +69,22 @@
               {{ getNumElementosEmpezadas() }}
             </div>
           </b-card-group>
-          
-          <h3 align="left" class="mt-4">Series favoritas</h3>
-
+        </b-col>
+        <b-col cols="4">
+          <h3 align="left" class="mt-4">Listas</h3>
+          <b-button href="/crearLista">Crear una nueva lista</b-button>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="8">
+          <h3 align="left" class="mt-4" v-if="renderFav">Series favoritas</h3>
           <b-pagination
             v-model="currentPageFavoritas"
             :total-rows="getNumFavoritas()"
             :per-page="perPage"
             aria-controls="favoritas"
             class="mt-2"
+            v-if="renderFav"
           ></b-pagination>
           <b-card-group id="favoritas">
             <b-card
@@ -88,7 +95,7 @@
               <router-link
                 :to="{
                   path: '/serie',
-                  query: { id: getIdFavoritas(currentPageFavoritas, j) },
+                  query: { id: getIdFavoritas(currentPagePendientes, j) },
                 }"
               >
                 <b-card-img
@@ -108,6 +115,52 @@
             </b-card>
             <div v-if="seguir2">
               {{ getNumElementosFavoritas() }}
+            </div>
+          </b-card-group>
+        </b-col>
+        <b-col cols="2"></b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="8">
+          <h3 align="left" class="mt-4">Series pendientes</h3>
+
+          <b-pagination
+            v-model="currentPagePendientes"
+            :total-rows="getNumPendientes()"
+            :per-page="perPage"
+            aria-controls="pendientes"
+            class="mt-2"
+            v-if="renderPend"
+          ></b-pagination>
+          <b-card-group id="pendientes">
+            <b-card
+              v-for="j in numElementosPendientes"
+              :key="j"
+              class="border-0"
+            >
+              <router-link
+                :to="{
+                  path: '/serie',
+                  query: { id: getIdPendientes(currentPageFavoritas, j) },
+                }"
+              >
+                <b-card-img
+                  :src="getSeriePend(currentPagePendientes, j)"
+                  :alt="getNombreSeriePend(currentPagePendientes, j)"
+                ></b-card-img>
+              </router-link>
+              <b-container>
+                <b-row cols="1" align-v="stretch">
+                  <b-col>
+                    <div class="nombre">
+                      {{ getNombreSeriePend(currentPagePendientes, j) }}
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-container>
+            </b-card>
+            <div v-if="seguir3">
+              {{ getNumElementosPendientes() }}
             </div>
           </b-card-group>
         </b-col>
@@ -143,7 +196,12 @@ export default {
       renderEmp: true,
       currentPageEmpezadas: 1,
       currentPageFavoritas: 1,
+      currentPagePendientes: 1,
       perPage: 6,
+      numElementosPendientes: "",
+      seriesP: [],
+      renderPend: true,
+      datosObtenidosPend: false,
     };
   },
   methods: {
@@ -152,6 +210,9 @@ export default {
     },
     getNumFavoritas() {
       return this.datosUsuario.seriesFavoritas.length;
+    },
+    getNumPendientes() {
+      return this.datosUsuario.seriesPendientes.length;
     },
     obtenerSeriePorID(num) {
       console.log(num);
@@ -193,9 +254,7 @@ export default {
       console.log("Error: ", data);
     },
     obtenerSeriePorIDFav(num) {
-      console.log(num);
       var idSeries = this.datosUsuario.seriesFavoritas;
-      console.log(this.datosUsuario.seriesFavoritas);
       var parsedobj = JSON.parse(JSON.stringify(idSeries));
 
       themoviedb.tv.getById(
@@ -226,6 +285,34 @@ export default {
       if (this.seriesF.length == this.datosUsuario.seriesFavoritas.length) {
         this.datosObtenidosFav = true;
       }
+    },
+    obtenerSeriePorIDPend(num){
+      themoviedb.tv.getById(
+        { id: this.datosUsuario.seriesPendientes[num]},
+        this.exito3,
+        this.error1
+      );
+    },
+    exito3(data){
+      console.log("Exito: ", data);
+      var datos = JSON.parse(data);
+      var series = JSON.parse(
+        JSON.stringify(this.datosUsuario.seriesPendientes)
+      );
+      console.log(series);
+
+      var llaves = series.keys();
+
+      for (const i of llaves){
+        if (series[i] == datos["id"]) {
+          this.seriesP[i] = {
+            id: datos["id"],
+            foto: datos["poster_path"],
+            nombre: datos["name"],
+          };
+        }
+      }
+
     },
     obtenerDatosUsuario() {
       var _this = this;
@@ -296,6 +383,37 @@ export default {
             } else {
               _this.renderFav = false;
               _this.datosObtenidosFav = true;
+            }
+
+            var seriesPend = JSON.parse(
+              JSON.stringify(_this.datosUsuario.seriesPendientes)
+            );
+            if (seriesPend.length > 0) {
+              /*
+              for (
+                var n = 0, j = 1;
+                n < _this.datosUsuario.seriesPendientes.length;
+                n += 6, j++
+              ) {
+                _this.paginasFavoritas.push(j);
+              }
+              */
+              _this.contadorPendientes =
+                _this.datosUsuario.seriesPendientes.length;
+              _this.numElementosPendientes = Array.from(Array(6).keys());
+
+              console.log(_this.datosUsuario.seriesPendientes);
+              console.log(_this.datosUsuario.seriesPendientes[0]);
+
+              var idSeriesP = _this.datosUsuario.seriesPendientes.keys();
+              
+              for (const key of idSeriesP) {
+                _this.obtenerSeriePorIDPend(key);
+              }
+              
+            } else {
+              _this.renderPend = false;
+              _this.datosObtenidosPend = true;
             }
           } else {
             console.log("No such document!");
@@ -397,6 +515,34 @@ export default {
         return this.seriesF[(i - 1) * 6 + j].id;
       } else return "";
     },
+    getIdPendientes(i, j) {
+      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
+        return this.seriesP[(i - 1) * 6 + j].id;
+      } else return "";
+    },
+    getSeriePend(i, j) {
+      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
+        var path = String(this.seriesP[(i - 1) * 6 + j].foto);
+        return "https://image.tmdb.org/t/p/original" + path;
+      } else {
+        return "";
+        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+      }
+    },
+    getNombreSeriePend(i, j) {
+      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
+        return this.seriesP[(i - 1) * 6 + j].nombre;
+      } else return "";
+    },
+    getNumElementosPendientes() {
+      this.contadorPendientes -= 6;
+
+      if (this.contadorPendientes > 0 && this.contadorPendientes < 6)
+        this.numElementosPendientes = Array.from(Array(6).keys());
+      else if (this.contadorPendientes <= 0) {
+        this.seguir2 = false;
+      } else this.numElementosPendientes = Array.from(Array(6).keys());
+    }
   },
 };
 </script>

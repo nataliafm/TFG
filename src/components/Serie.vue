@@ -58,6 +58,7 @@
                   class="fotoCreador"
                   v-if="getExisteCreador(currentPage, j)"
                 ></b-card-img>
+                <b-card-img v-else blank-src></b-card-img>
                 <b-card-text class="nombre">{{
                   getNombreCreador(currentPage, j)
                 }}</b-card-text>
@@ -164,48 +165,6 @@
                 {{ getNumTemporada() }}
               </div>
             </b-card-group>
-            <!--
-            <b-carousel controls :interval="9999999" class="actores">
-              <b-container>
-                <b-row class="fila">
-                  <b-carousel-slide
-                    v-for="i in paginasTemporadas"
-                    :key="i"
-                    v-once
-                  >
-                    <template slot="img" v-for="j in numTemporada">
-                      <b-col cols="2" class="columna" :key="j">
-                        <router-link
-                          :to="{
-                            path: '/temporada',
-                            query: {
-                              id: getIdTemporada(),
-                              numero: getNumeroTemporada(i, j),
-                              nombre: getTitulo(),
-                            },
-                          }"
-                        >
-                          <b-img
-                            rounded
-                            class="posterTemporada"
-                            :src="getPosterTemporada(i, j)"
-                            :alt="'Temporada ' + getNumeroTemporada(i, j)"
-                            fluid-grow
-                          ></b-img>
-                        </router-link>
-                        <div class="nombreTemporada">
-                          {{ getNombreTemporada(i, j) }}
-                        </div>
-                      </b-col>
-                    </template>
-                    <div v-if="seguir">
-                      {{ getNumTemporada() }}
-                    </div>
-                  </b-carousel-slide>
-                </b-row>
-              </b-container>
-            </b-carousel>
-            -->
           </div>
         </b-col>
       </b-row>
@@ -457,10 +416,10 @@ export default {
       }
     },
     getExisteCreador(i, j) {
-      return String(this.pathFotos[(i - 1) * 6 + j]) != undefined;
+      return this.pathFotos[(i - 1) * 6 + j] != undefined;
     },
     getExisteTemporada(i, j) {
-      return String(this.temporadas[(i - 1) * 6 + j]) != undefined;
+      return this.temporadas[(i - 1) * 6 + j] != undefined;
     },
     getPosterTemporada(i, j) {
       var path = this.temporadas[(i - 1) * 6 + j];
