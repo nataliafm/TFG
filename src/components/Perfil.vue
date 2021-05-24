@@ -3,7 +3,7 @@
     <div v-if="!datosObtenidos && !datosObtenidosFav">
       {{ obtenerDatosUsuario() }}
     </div>
-    <b-container v-if="datosObtenidos && datosObtenidosFav">
+    <b-container v-if="datosObtenidos && datosObtenidosFav && datosObtenidosListas">
       <b-row cols="3" align-v="stretch">
         <b-col cols="2" class="mt-4">
           <b-img rounded="circle" fluid :src="getURLperfil()"></b-img>
@@ -19,7 +19,7 @@
       </b-row>
       <b-row>
         <b-col cols="8">
-          <h3 align="left" v-if="renderEmp">Series empezadas</h3>
+          <h3 align="left" v-if="renderEmp" class="mt-4">Series empezadas</h3>
 
           <b-pagination
             v-model="currentPageEmpezadas"
@@ -72,7 +72,17 @@
         </b-col>
         <b-col cols="4">
           <h3 align="left" class="mt-4">Listas</h3>
-          <b-button href="/crearLista">Crear una nueva lista</b-button>
+
+          <b-card-group deck>
+            <b-card v-for="j in 3" :key="j" class="border-0">
+              <b-card-img :src="getFotoLista(j)"></b-card-img>
+              <div class="nombre">{{ getTituloLista(j) }}</div>
+            </b-card>
+          </b-card-group>
+
+          <div align="left">
+            <b-button href="/crearLista">Crear una nueva lista</b-button>
+          </div>
         </b-col>
       </b-row>
       <b-row>
@@ -202,6 +212,8 @@ export default {
       seriesP: [],
       renderPend: true,
       datosObtenidosPend: false,
+      ultimas3Listas: [],
+      datosObtenidosListas: false,
     };
   },
   methods: {
@@ -286,14 +298,14 @@ export default {
         this.datosObtenidosFav = true;
       }
     },
-    obtenerSeriePorIDPend(num){
+    obtenerSeriePorIDPend(num) {
       themoviedb.tv.getById(
-        { id: this.datosUsuario.seriesPendientes[num]},
+        { id: this.datosUsuario.seriesPendientes[num] },
         this.exito3,
         this.error1
       );
     },
-    exito3(data){
+    exito3(data) {
       console.log("Exito: ", data);
       var datos = JSON.parse(data);
       var series = JSON.parse(
@@ -303,7 +315,7 @@ export default {
 
       var llaves = series.keys();
 
-      for (const i of llaves){
+      for (const i of llaves) {
         if (series[i] == datos["id"]) {
           this.seriesP[i] = {
             id: datos["id"],
@@ -312,7 +324,6 @@ export default {
           };
         }
       }
-
     },
     obtenerDatosUsuario() {
       var _this = this;
@@ -326,6 +337,36 @@ export default {
           if (doc.exists) {
             console.log("Document data:", doc.data());
             _this.datosUsuario = doc.data();
+
+            var listas = JSON.parse(
+              JSON.stringify(_this.datosUsuario.listasSeries)
+            );
+
+            var ids3 = listas.slice(0, 3);
+
+            for (var i = 0; i < ids3.length; i++) {
+              const _i = i;
+              
+              db.collection("Listas").doc(ids3[_i])
+                .get()
+                .then((doc) => {
+                  if (doc.exists) {
+                    console.log("RESULTADO: ", doc.data());
+                    _this.ultimas3Listas[_i] = JSON.parse(
+                      JSON.stringify(doc.data())
+                    );
+
+                    if (_this.ultimas3Listas.length == ids3.length){
+                      _this.datosObtenidosListas = true;
+                    }
+                  } else {
+                    console.log("Document doesn't exist");
+                  }
+                })
+                .catch((error) => {
+                  console.log("Error getting document:", error);
+                });
+            }
 
             var seriesEmp = JSON.parse(
               JSON.stringify(_this.datosUsuario.seriesEmpezadas)
@@ -406,11 +447,10 @@ export default {
               console.log(_this.datosUsuario.seriesPendientes[0]);
 
               var idSeriesP = _this.datosUsuario.seriesPendientes.keys();
-              
+
               for (const key of idSeriesP) {
                 _this.obtenerSeriePorIDPend(key);
               }
-              
             } else {
               _this.renderPend = false;
               _this.datosObtenidosPend = true;
@@ -542,7 +582,17 @@ export default {
       else if (this.contadorPendientes <= 0) {
         this.seguir2 = false;
       } else this.numElementosPendientes = Array.from(Array(6).keys());
-    }
+    },
+    getFotoLista(j) {
+      if (this.ultimas3Listas[j-1] != undefined)
+        return "https://image.tmdb.org/t/p/original" + this.ultimas3Listas[j-1].series[0].foto;
+      else return "";
+    },
+    getTituloLista(j) {
+      if (this.ultimas3Listas[j-1] != undefined)
+        return this.ultimas3Listas[j-1].nombre;
+      else return "";
+    },
   },
 };
 </script>

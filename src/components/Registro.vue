@@ -133,7 +133,8 @@ export default {
               nombre: "",
               seriesFavoritas: [],
               seriesEmpezadas: [],
-              seriesPendientes: []
+              seriesPendientes: [],
+              listasSeries: []
             })
             .then(function () {
               console.log("Document successfully written!");
