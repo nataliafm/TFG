@@ -41,10 +41,13 @@
                 :key="j"
                 class="border-0"
               >
-                <b-card-img
-                  :src="getActor(currentPageA, j)"
-                  :alt="getNombreActor(currentPageA, j)"
-                ></b-card-img>
+                <router-link :to="{path: '/persona', query: {id: getIdActor(currentPageA, j)}}">
+                  <b-card-img
+                    :src="getActor(currentPageA, j)"
+                    :alt="getNombreActor(currentPageA, j)"
+                  ></b-card-img>
+                </router-link>
+
                 <b-card-text class="nombre">{{
                   getNombreActor(currentPageA, j)
                 }}</b-card-text>
@@ -68,12 +71,14 @@
             ></b-pagination>
             <b-card-group id="equipo">
               <b-card v-for="j in numElementosEquipo" :key="j" class="border-0">
-                <b-card-img
-                  v-if="existeEquipo(currentPageE, j)"
-                  :src="getEquipo(currentPageE, j)"
-                  :alt="getNombreEquipo(currentPageE, j)"
-                ></b-card-img>
-                <b-card-img v-else blank-src></b-card-img>
+                <router-link :to="{path: '/persona', query: {id: getIdEquipo(currentPageE, j)}}">
+                  <b-card-img
+                    v-if="existeEquipo(currentPageE, j)"
+                    :src="getEquipo(currentPageE, j)"
+                    :alt="getNombreEquipo(currentPageE, j)"
+                  ></b-card-img>
+                  <b-card-img v-else blank-src></b-card-img>
+                </router-link>
                 <b-card-text class="nombre">{{
                   getNombreEquipo(currentPageE, j)
                 }}</b-card-text>
@@ -303,6 +308,16 @@ export default {
           String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]) != "null"
         );
       } else return false;
+    },
+    getIdActor(i, j) {
+      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.castEpisodio[(i - 1) * 6 + j]["id"];
+      else return "";
+    },
+    getIdEquipo(i, j) {
+      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
+        return this.crewEpisodio[(i - 1) * 6 + j]["id"];
+      else return "";
     },
   },
 };

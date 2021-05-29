@@ -1,9 +1,23 @@
 <template>
   <div class="perfil">
-    <div v-if="!datosObtenidos && !datosObtenidosFav">
+    <div
+      v-if="
+        !datosObtenidos ||
+        !datosObtenidosFav ||
+        !datosObtenidosListas ||
+        !datosObtenidosPend
+      "
+    >
       {{ obtenerDatosUsuario() }}
     </div>
-    <b-container v-if="datosObtenidos && datosObtenidosFav && datosObtenidosListas">
+    <b-container
+      v-if="
+        datosObtenidos &&
+        datosObtenidosFav &&
+        datosObtenidosListas &&
+        datosObtenidosPend
+      "
+    >
       <b-row cols="3" align-v="stretch">
         <b-col cols="2" class="mt-4">
           <b-img rounded="circle" fluid :src="getURLperfil()"></b-img>
@@ -73,14 +87,33 @@
         <b-col cols="4">
           <h3 align="left" class="mt-4">Listas</h3>
 
-          <b-card-group deck>
+          <b-pagination
+            v-model="currentPageListas"
+            :total-rows="getNumListas()"
+            :per-page="3"
+            aria-controls="listas"
+            class="mt-2"
+            v-if="renderListas"
+          ></b-pagination>
+          <b-card-group deck v-if="renderListas" id="listas">
             <b-card v-for="j in 3" :key="j" class="border-0">
-              <b-card-img :src="getFotoLista(j)"></b-card-img>
-              <div class="nombre">{{ getTituloLista(j) }}</div>
+              <router-link
+                :to="{
+                  path: '/paginaLista',
+                  query: { id: getIdLista(currentPageListas, j) },
+                }"
+              >
+                <b-card-img
+                  :src="getFotoLista(currentPageListas, j)"
+                ></b-card-img>
+              </router-link>
+              <div class="nombre">
+                {{ getTituloLista(currentPageListas, j) }}
+              </div>
             </b-card>
           </b-card-group>
 
-          <div align="left">
+          <div align="left" class="mt-4">
             <b-button href="/crearLista">Crear una nueva lista</b-button>
           </div>
         </b-col>
@@ -105,7 +138,7 @@
               <router-link
                 :to="{
                   path: '/serie',
-                  query: { id: getIdFavoritas(currentPagePendientes, j) },
+                  query: { id: getIdFavoritas(currentPageFavoritas, j) },
                 }"
               >
                 <b-card-img
@@ -151,7 +184,7 @@
               <router-link
                 :to="{
                   path: '/serie',
-                  query: { id: getIdPendientes(currentPageFavoritas, j) },
+                  query: { id: getIdPendientes(currentPagePendientes, j) },
                 }"
               >
                 <b-card-img
@@ -207,6 +240,7 @@ export default {
       currentPageEmpezadas: 1,
       currentPageFavoritas: 1,
       currentPagePendientes: 1,
+      currentPageListas: 1,
       perPage: 6,
       numElementosPendientes: "",
       seriesP: [],
@@ -214,6 +248,10 @@ export default {
       datosObtenidosPend: false,
       ultimas3Listas: [],
       datosObtenidosListas: false,
+      renderListas: true,
+      idsListas: "",
+      listas: [],
+      seguir3: true,
     };
   },
   methods: {
@@ -225,6 +263,10 @@ export default {
     },
     getNumPendientes() {
       return this.datosUsuario.seriesPendientes.length;
+    },
+    getNumListas() {
+      console.log("HAY " + this.datosUsuario.listasSeries.length + " listas");
+      return this.datosUsuario.listasSeries.length;
     },
     obtenerSeriePorID(num) {
       console.log(num);
@@ -324,6 +366,35 @@ export default {
           };
         }
       }
+
+      if (this.seriesP.length == this.datosUsuario.seriesPendientes.length) {
+        this.datosObtenidosPend = true;
+      }
+    },
+    obtenerListaPorID(num) {
+      var _this = this;
+      var db = firebase.firestore();
+
+      console.log("HOLA " + num);
+
+      db.collection("Listas")
+        .doc(_this.idsListas[num])
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("RESULTADO: ", doc.data());
+            _this.listas[num] = JSON.parse(JSON.stringify(doc.data()));
+
+            if (_this.listas.length == _this.idsListas.length) {
+              _this.datosObtenidosListas = true;
+            }
+          } else {
+            console.log("Document doesn't exist");
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
     },
     obtenerDatosUsuario() {
       var _this = this;
@@ -342,30 +413,15 @@ export default {
               JSON.stringify(_this.datosUsuario.listasSeries)
             );
 
-            var ids3 = listas.slice(0, 3);
+            if (listas.length > 0) {
+              _this.idsListas = listas;
 
-            for (var i = 0; i < ids3.length; i++) {
-              const _i = i;
-              
-              db.collection("Listas").doc(ids3[_i])
-                .get()
-                .then((doc) => {
-                  if (doc.exists) {
-                    console.log("RESULTADO: ", doc.data());
-                    _this.ultimas3Listas[_i] = JSON.parse(
-                      JSON.stringify(doc.data())
-                    );
-
-                    if (_this.ultimas3Listas.length == ids3.length){
-                      _this.datosObtenidosListas = true;
-                    }
-                  } else {
-                    console.log("Document doesn't exist");
-                  }
-                })
-                .catch((error) => {
-                  console.log("Error getting document:", error);
-                });
+              for (const key of _this.idsListas.keys()) {
+                _this.obtenerListaPorID(key);
+              }
+            } else {
+              _this.renderListas = false;
+              _this.datosObtenidosListas = true;
             }
 
             var seriesEmp = JSON.parse(
@@ -430,15 +486,6 @@ export default {
               JSON.stringify(_this.datosUsuario.seriesPendientes)
             );
             if (seriesPend.length > 0) {
-              /*
-              for (
-                var n = 0, j = 1;
-                n < _this.datosUsuario.seriesPendientes.length;
-                n += 6, j++
-              ) {
-                _this.paginasFavoritas.push(j);
-              }
-              */
               _this.contadorPendientes =
                 _this.datosUsuario.seriesPendientes.length;
               _this.numElementosPendientes = Array.from(Array(6).keys());
@@ -583,14 +630,22 @@ export default {
         this.seguir2 = false;
       } else this.numElementosPendientes = Array.from(Array(6).keys());
     },
-    getFotoLista(j) {
-      if (this.ultimas3Listas[j-1] != undefined)
-        return "https://image.tmdb.org/t/p/original" + this.ultimas3Listas[j-1].series[0].foto;
+    getFotoLista(i, j) {
+      if (this.listas[(i - 1) * 3 + j - 1] != undefined)
+        return (
+          "https://image.tmdb.org/t/p/original" +
+          this.listas[(i - 1) * 3 + j - 1].series[0].foto
+        );
       else return "";
     },
-    getTituloLista(j) {
-      if (this.ultimas3Listas[j-1] != undefined)
-        return this.ultimas3Listas[j-1].nombre;
+    getTituloLista(i, j) {
+      if (this.listas[(i - 1) * 3 + j - 1] != undefined)
+        return this.listas[(i - 1) * 3 + j - 1].nombre;
+      else return "";
+    },
+    getIdLista(i, j) {
+      if (this.idsListas[(i - 1) * 3 + j - 1] != undefined)
+        return this.idsListas[(i - 1) * 3 + j - 1];
       else return "";
     },
   },

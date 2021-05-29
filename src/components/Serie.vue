@@ -52,13 +52,15 @@
             ></b-pagination>
             <b-card-group id="creadores">
               <b-card v-for="j in numElementos" :key="j" class="border-0">
-                <b-card-img
-                  :src="getCreador(currentPage, j)"
-                  :alt="getNombreCreador(currentPage, j)"
-                  class="fotoCreador"
-                  v-if="getExisteCreador(currentPage, j)"
-                ></b-card-img>
-                <b-card-img v-else blank-src></b-card-img>
+                <router-link :to="{path: '/persona', query: {id: getIdPersona(currentPage, j)}}">
+                  <b-card-img
+                    :src="getCreador(currentPage, j)"
+                    :alt="getNombreCreador(currentPage, j)"
+                    class="fotoCreador"
+                    v-if="getExisteCreador(currentPage, j)"
+                  ></b-card-img>
+                  <b-card-img v-else blank-src></b-card-img>
+                </router-link>
                 <b-card-text class="nombre">{{
                   getNombreCreador(currentPage, j)
                 }}</b-card-text>
@@ -366,7 +368,6 @@ export default {
       var aux = this.contadorTemporadas;
       this.contadorTemporadas -= 6;
 
-      console.log("JERBGJERBGJERBGVJERDVBGJRBVJERBGJHREBGJREG    " + aux);
       if (aux > 0 && aux < 6) this.numTemporada = Array.from(Array(6).keys());
       else if (aux <= 0) {
         this.seguir = false;
@@ -407,7 +408,6 @@ export default {
     },
     acabarLoop() {},
     getNombreCreador(i, j) {
-      console.log("holiiiiiiiiiiii " + this.creadores[(i - 1) * 6 + j]);
       if (this.creadores[(i - 1) * 6 + j] != undefined) {
         return this.creadores[(i - 1) * 6 + j]["name"];
       } else {
@@ -553,6 +553,13 @@ export default {
           console.log("Error getting document:", error);
         });
     },
+    getIdPersona(i, j) {
+      if (this.creadores[(i - 1) * 6 + j] != undefined) {
+        return this.creadores[(i - 1) * 6 + j]["id"];
+      } else {
+        return "";
+      }
+    }
   },
 };
 </script>

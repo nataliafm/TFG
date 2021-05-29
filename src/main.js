@@ -15,6 +15,8 @@ import Episodio from "./components/Episodio.vue";
 import Perfil from "./components/Perfil.vue";
 import EditarPerfil from "./components/editarPerfil.vue";
 import CrearLista from "./components/crearLista.vue";
+import PaginaLista from "./components/paginaLista.vue";
+import Persona from "./components/Persona.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -53,6 +55,8 @@ const router = new VueRouter({
     { path: '/perfil', name: 'perfil', component: Perfil },
     { path: '/editarPerfil', name: 'editarPerfil', component: EditarPerfil },
     { path: '/crearLista', name: 'crearLista', component: CrearLista },
+    { path: '/paginaLista', name: 'paginaLista', component: PaginaLista },
+    { path: '/persona', name: 'persona', component: Persona },
   ]
 });
 

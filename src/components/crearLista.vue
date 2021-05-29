@@ -20,6 +20,25 @@
             </b-form-group>
           </b-col>
         </b-row>
+        <b-row>
+          <b-col cols="6">
+            <b-form-group
+              id="nombre"
+              label="Descripción de la lista: "
+              label-for="input-descripcion"
+              align="left"
+              description=""
+            >
+              <b-form-textarea
+                id="input-descripcion"
+                name="descripcion"
+                type="text"
+                v-model="form.descripcion"
+                rows="8"
+              ></b-form-textarea>
+            </b-form-group>
+          </b-col>
+        </b-row>
         <div class="mb-2" align="left">Elementos de la lista:</div>
         <b-row>
           <b-col cols="6">
@@ -80,6 +99,7 @@ export default {
     return {
       form: {
         nombre: "",
+        descripcion: "",
         series: [],
       },
       series: [],
@@ -155,6 +175,7 @@ export default {
       ref
         .add({
           nombre: _this.form.nombre,
+          descripcion: _this.form.descripcion,
           series: _this.form.series,
         })
         .then((docRef) => {
