@@ -11,11 +11,11 @@
         </b-col>
       </b-row>
       <b-row>
-          <b-col>
+          <b-col :key="getKey()">
             <b-card-group deck v-for="i in numFilas" :key="i">
-              <b-card v-for="j in 6" :key="j" class="border-0">
+              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
                 <router-link :to="{path:'/serie', query: { id: getIdSerie(i, j) }}">
-                  <b-card-img :src="getFotoSerie(i, j)"></b-card-img>
+                  <b-card-img :src="getFotoSerie(i, j)" :alt="getTituloSerie(i, j)"></b-card-img>
                 </router-link>
                 <div class="nombre"> {{ getTituloSerie(i, j) }}</div>
               </b-card>
@@ -37,7 +37,15 @@ export default {
       datosObtenidos: false,
       datosLista: [],
       numFilas: 1,
+      llave: true,
+      perPage: 6,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     getIdLista() {
@@ -56,7 +64,7 @@ export default {
           console.log("Document data:", doc.data());
           _this.datosLista = doc.data();
           _this.datosObtenidos = true;
-          _this.numFilas = Math.ceil(this.datosLista.series.length / 6);
+          _this.numFilas = Math.ceil(this.datosLista.series.length / this.getPerPage());
         })
         .catch((error) => {
           console.log("Error getting document:", error);
@@ -69,23 +77,43 @@ export default {
       return this.datosLista.descripcion;
     },
     getFotoSerie(i, j) {
-      if (this.datosLista.series[(i - 1) * 6 + j - 1] != undefined)
+      if (this.datosLista.series[(i - 1) * this.getPerPage() + j] != undefined)
         return (
           "https://image.tmdb.org/t/p/original" +
-          this.datosLista.series[(i - 1) * 6 + j - 1].foto
+          this.datosLista.series[(i - 1) * this.getPerPage() + j].foto
         );
       else return "";
     },
     getTituloSerie(i, j) {
-      if (this.datosLista.series[(i - 1) * 6 + j - 1] != undefined)
-        return this.datosLista.series[(i - 1) * 6 + j - 1].nombre;
+      if (this.datosLista.series[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.datosLista.series[(i - 1) * this.getPerPage() + j].nombre;
       else return "";
     },
     getIdSerie(i, j) {
-      if (this.datosLista.series[(i - 1) * 6 + j - 1] != undefined)
-        return this.datosLista.series[(i - 1) * 6 + j - 1].id;
+      if (this.datosLista.series[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.datosLista.series[(i - 1) * this.getPerPage() + j].id;
       else return "";
-    }
+    },
+    myEventHandler(e){
+      if (e.target.innerWidth < 580){
+        this.perPage = 1;
+      }
+      else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200){
+        this.perPage = 3;
+      }
+      else{
+        this.perPage = 6;
+      }
+
+      this.numFilas = Math.ceil(this.datosLista.series.length / this.getPerPage());
+      this.llave = !this.llave;
+    },
+    getKey(){
+      return this.llave;
+    },
+    getPerPage(){
+      return this.perPage;
+    },
   },
 };
 </script>

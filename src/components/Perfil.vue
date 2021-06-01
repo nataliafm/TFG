@@ -42,12 +42,14 @@
             aria-controls="empezadas"
             class="mt-2"
             v-if="renderEmp"
+            :key="getKey()"
           ></b-pagination>
-          <b-card-group id="empezadas">
+          <b-card-group id="empezadas" :key="getKey()">
             <b-card
-              v-for="j in numElementosEmpezadas"
+              v-for="j in Array(getPerPage()).keys()"
               :key="j"
               class="border-0"
+              deck
             >
               <router-link
                 :to="{
@@ -66,18 +68,12 @@
                   :alt="getNombreSerie(currentPageEmpezadas, j)"
                 ></b-card-img>
               </router-link>
-              <b-container>
-                <b-row cols="1" align-v="stretch">
-                  <b-col class="align-items-center h-100">
-                    <div class="nombre h-100 d-inline-block">
-                      {{ getNombreSerie(currentPageEmpezadas, j) }}
-                    </div>
-                    <div class="rol h-100 d-inline-block">
-                      {{ getTemporada(currentPageEmpezadas, j) }}
-                    </div>
-                  </b-col>
-                </b-row>
-              </b-container>
+              <b-card-text class="nombre">
+                {{ getNombreSerie(currentPageEmpezadas, j) }}
+              </b-card-text>
+              <b-card-text class="rol">
+                {{ getTemporada(currentPageEmpezadas, j) }}
+              </b-card-text>
             </b-card>
             <div v-if="seguir1">
               {{ getNumElementosEmpezadas() }}
@@ -90,13 +86,14 @@
           <b-pagination
             v-model="currentPageListas"
             :total-rows="getNumListas()"
-            :per-page="3"
+            :per-page="perPageLista"
             aria-controls="listas"
             class="mt-2"
             v-if="renderListas"
+            :key="getKey()"
           ></b-pagination>
-          <b-card-group deck v-if="renderListas" id="listas">
-            <b-card v-for="j in 3" :key="j" class="border-0">
+          <b-card-group deck v-if="renderListas" id="listas" :key="getKey()">
+            <b-card v-for="j in Array(getPerPageLista()).keys()" :key="j" class="border-0">
               <router-link
                 :to="{
                   path: '/paginaLista',
@@ -105,11 +102,12 @@
               >
                 <b-card-img
                   :src="getFotoLista(currentPageListas, j)"
+                  :alt="getTituloLista(currentPageListas, j)"
                 ></b-card-img>
               </router-link>
-              <div class="nombre">
+              <b-card-text class="nombre">
                 {{ getTituloLista(currentPageListas, j) }}
-              </div>
+              </b-card-text>
             </b-card>
           </b-card-group>
 
@@ -128,12 +126,14 @@
             aria-controls="favoritas"
             class="mt-2"
             v-if="renderFav"
+            :key="getKey()"
           ></b-pagination>
-          <b-card-group id="favoritas">
+          <b-card-group id="favoritas" :key="getKey()">
             <b-card
-              v-for="j in numElementosFavoritas"
+              v-for="j in Array(getPerPage()).keys()"
               :key="j"
               class="border-0"
+              deck
             >
               <router-link
                 :to="{
@@ -146,15 +146,9 @@
                   :alt="getNombreSerieFav(currentPageFavoritas, j)"
                 ></b-card-img>
               </router-link>
-              <b-container>
-                <b-row cols="1" align-v="stretch">
-                  <b-col>
-                    <div class="nombre">
-                      {{ getNombreSerieFav(currentPageFavoritas, j) }}
-                    </div>
-                  </b-col>
-                </b-row>
-              </b-container>
+              <b-card-text class="nombre">
+                {{ getNombreSerieFav(currentPageFavoritas, j) }}
+              </b-card-text>
             </b-card>
             <div v-if="seguir2">
               {{ getNumElementosFavoritas() }}
@@ -170,16 +164,18 @@
           <b-pagination
             v-model="currentPagePendientes"
             :total-rows="getNumPendientes()"
-            :per-page="perPage"
+            :per-page="getPerPage()"
             aria-controls="pendientes"
             class="mt-2"
             v-if="renderPend"
+            :key="getKey()"
           ></b-pagination>
-          <b-card-group id="pendientes">
+          <b-card-group id="pendientes" :key="getKey()">
             <b-card
-              v-for="j in numElementosPendientes"
+              v-for="j in Array(getPerPage()).keys()"
               :key="j"
               class="border-0"
+              deck
             >
               <router-link
                 :to="{
@@ -192,15 +188,9 @@
                   :alt="getNombreSeriePend(currentPagePendientes, j)"
                 ></b-card-img>
               </router-link>
-              <b-container>
-                <b-row cols="1" align-v="stretch">
-                  <b-col>
-                    <div class="nombre">
-                      {{ getNombreSeriePend(currentPagePendientes, j) }}
-                    </div>
-                  </b-col>
-                </b-row>
-              </b-container>
+              <b-card-text class="nombre">
+                {{ getNombreSeriePend(currentPagePendientes, j) }}
+              </b-card-text>
             </b-card>
             <div v-if="seguir3">
               {{ getNumElementosPendientes() }}
@@ -252,7 +242,15 @@ export default {
       idsListas: "",
       listas: [],
       seguir3: true,
+      llave: true,
+      perPageLista: 3,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     getNumEmpezadas() {
@@ -526,8 +524,8 @@ export default {
       return this.datosUsuario.descripcion;
     },
     getSerie(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined) {
-        var path = String(this.seriesE[(i - 1) * 6 + j].foto);
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined) {
+        var path = String(this.seriesE[(i - 1) * this.perPage + j].foto);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
@@ -535,17 +533,17 @@ export default {
       }
     },
     getNombreSerie(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined)
-        return this.seriesE[(i - 1) * 6 + j].nombre;
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined)
+        return this.seriesE[(i - 1) * this.perPage + j].nombre;
       else return "";
     },
     getTemporada(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined)
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined)
         return (
           "Temporada " +
-          this.seriesE[(i - 1) * 6 + j].temp +
+          this.seriesE[(i - 1) * this.perPage + j].temp +
           ", Capítulo " +
-          this.seriesE[(i - 1) * 6 + j].cap
+          this.seriesE[(i - 1) * this.perPage + j].cap
         );
       else return "";
     },
@@ -559,24 +557,24 @@ export default {
       } else this.numElementosEmpezadas = Array.from(Array(6).keys());
     },
     getIdSerie(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined)
-        return this.seriesE[(i - 1) * 6 + j].id;
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined)
+        return this.seriesE[(i - 1) * this.perPage + j].id;
       else return "";
     },
     getNumeroTemporada(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined)
-        return this.seriesE[(i - 1) * 6 + j].temp;
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined)
+        return this.seriesE[(i - 1) * this.perPage + j].temp;
       else return "";
     },
     getNumCapitulo(i, j) {
-      if (this.seriesE[(i - 1) * 6 + j] != undefined)
-        return this.seriesE[(i - 1) * 6 + j].cap;
+      if (this.seriesE[(i - 1) * this.perPage + j] != undefined)
+        return this.seriesE[(i - 1) * this.perPage + j].cap;
       else return "";
     },
 
     getSerieFav(i, j) {
-      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
-        var path = String(this.seriesF[(i - 1) * 6 + j].foto);
+      if (this.seriesF[(i - 1) * this.perPage + j] != undefined) {
+        var path = String(this.seriesF[(i - 1) * this.perPage + j].foto);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
@@ -584,8 +582,8 @@ export default {
       }
     },
     getNombreSerieFav(i, j) {
-      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
-        return this.seriesF[(i - 1) * 6 + j].nombre;
+      if (this.seriesF[(i - 1) * this.perPage + j] != undefined) {
+        return this.seriesF[(i - 1) * this.perPage + j].nombre;
       } else return "";
     },
     getNumElementosFavoritas() {
@@ -598,18 +596,18 @@ export default {
       } else this.numElementosFavoritas = Array.from(Array(6).keys());
     },
     getIdFavoritas(i, j) {
-      if (this.seriesF[(i - 1) * 6 + j] != undefined) {
-        return this.seriesF[(i - 1) * 6 + j].id;
+      if (this.seriesF[(i - 1) * this.perPage + j] != undefined) {
+        return this.seriesF[(i - 1) * this.perPage + j].id;
       } else return "";
     },
     getIdPendientes(i, j) {
-      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
-        return this.seriesP[(i - 1) * 6 + j].id;
+      if (this.seriesP[(i - 1) * this.perPage + j] != undefined) {
+        return this.seriesP[(i - 1) * this.perPage + j].id;
       } else return "";
     },
     getSeriePend(i, j) {
-      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
-        var path = String(this.seriesP[(i - 1) * 6 + j].foto);
+      if (this.seriesP[(i - 1) * this.perPage + j] != undefined) {
+        var path = String(this.seriesP[(i - 1) * this.perPage + j].foto);
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
@@ -617,8 +615,8 @@ export default {
       }
     },
     getNombreSeriePend(i, j) {
-      if (this.seriesP[(i - 1) * 6 + j] != undefined) {
-        return this.seriesP[(i - 1) * 6 + j].nombre;
+      if (this.seriesP[(i - 1) * this.perPage + j] != undefined) {
+        return this.seriesP[(i - 1) * this.perPage + j].nombre;
       } else return "";
     },
     getNumElementosPendientes() {
@@ -631,23 +629,51 @@ export default {
       } else this.numElementosPendientes = Array.from(Array(6).keys());
     },
     getFotoLista(i, j) {
-      if (this.listas[(i - 1) * 3 + j - 1] != undefined)
+      if (this.listas[(i - 1) * this.perPageLista + j] != undefined)
         return (
           "https://image.tmdb.org/t/p/original" +
-          this.listas[(i - 1) * 3 + j - 1].series[0].foto
+          this.listas[(i - 1) * this.perPageLista + j].series[0].foto
         );
       else return "";
     },
     getTituloLista(i, j) {
-      if (this.listas[(i - 1) * 3 + j - 1] != undefined)
-        return this.listas[(i - 1) * 3 + j - 1].nombre;
+      if (this.listas[(i - 1) * this.perPageLista + j] != undefined)
+        return this.listas[(i - 1) * this.perPageLista + j].nombre;
       else return "";
     },
     getIdLista(i, j) {
-      if (this.idsListas[(i - 1) * 3 + j - 1] != undefined)
-        return this.idsListas[(i - 1) * 3 + j - 1];
+      if (this.idsListas[(i - 1) * this.perPageLista + j] != undefined)
+        return this.idsListas[(i - 1) * this.perPageLista + j];
       else return "";
     },
+    myEventHandler(e) {
+      console.log(e.target.innerWidth);
+      if (e.target.innerWidth < 580){
+        this.perPage = 1;
+        this.perPageLista = 1;
+      }
+      else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200){
+        this.perPage = 3;
+        this.perPageLista = 1;
+      }
+      else{
+        this.perPage = 6;
+        this.perPageLista = 3;
+      }
+      
+      this.llave = !this.llave;
+    },
+    getKey(){
+      console.log(this.llave);
+      return this.llave;
+    },
+    getPerPage(){
+      console.log(this.perPage);
+      return this.perPage;
+    },
+    getPerPageLista(){
+      return this.perPageLista;
+    }
   },
 };
 </script>

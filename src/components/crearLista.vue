@@ -72,10 +72,10 @@
           </b-col>
         </b-row>
         <b-row>
-          <b-col>
+          <b-col :key="getKey()">
             <b-card-group deck v-for="i in numFilas" :key="i">
-              <b-card v-for="j in 6 /*form.series*/" :key="j" class="border-0">
-                <b-card-img :src="getFotoSerie(i, j)"></b-card-img>
+              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
+                <b-card-img :src="getFotoSerie(i, j)" :alt="getTituloSerie(i, j)"></b-card-img>
                 <div class="nombre">{{ getTituloSerie(i, j) }}</div>
                 <b-button class="botonQuitar" v-on:click="eliminarItem(i, j)" v-if="getTituloSerie(i, j) != ''">Eliminar</b-button>
               </b-card>
@@ -105,7 +105,15 @@ export default {
       series: [],
       serieYaEsta: false,
       numFilas: 0,
+      perPage: 6,
+      llave: true,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     actualizarLista() {
@@ -143,29 +151,49 @@ export default {
         };
         this.form.series.push(aux);
         this.serieYaEsta = false;
-        this.numFilas = Math.ceil(this.form.series.length / 6);
+        this.numFilas = Math.ceil(this.form.series.length / this.getPerPage());
       } else {
         this.serieYaEsta = true;
       }
     },
     getFotoSerie(i, j) {
-      if (this.form.series[(i - 1) * 6 + j - 1] != undefined)
+      if (this.form.series[(i - 1) * this.getPerPage() + j] != undefined)
         return (
           "https://image.tmdb.org/t/p/original" +
-          this.form.series[(i - 1) * 6 + j - 1].foto
+          this.form.series[(i - 1) * this.getPerPage() + j].foto
         );
       else return "";
     },
     getTituloSerie(i, j) {
-      if (this.form.series[(i - 1) * 6 + j - 1] != undefined)
-        return this.form.series[(i - 1) * 6 + j - 1].nombre;
+      if (this.form.series[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.form.series[(i - 1) * this.getPerPage() + j].nombre;
       else return "";
     },
     getNumFilas() {
-      return Math.ceil(this.form.series.length / 6);
+      return Math.ceil(this.form.series.length / this.getPerPage());
     },
     eliminarItem(i, j){
-      this.form.series.splice((i - 1) * 6 + j - 1, 1);
+      this.form.series.splice((i - 1) * this.getPerPage() + j, 1);
+    },
+    myEventHandler(e){
+      if (e.target.innerWidth < 580){
+        this.perPage = 1;
+      }
+      else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200){
+        this.perPage = 3;
+      }
+      else{
+        this.perPage = 6;
+      }
+
+      this.numFilas = Math.ceil(this.form.series.length / this.getPerPage());
+      this.llave = !this.llave;
+    },
+    getKey(){
+      return this.llave;
+    },
+    getPerPage(){
+      return this.perPage;
     },
     enviarDatos() {
       var _this = this;

@@ -57,9 +57,7 @@
                     :src="getCreador(currentPage, j)"
                     :alt="getNombreCreador(currentPage, j)"
                     class="fotoCreador"
-                    v-if="getExisteCreador(currentPage, j)"
                   ></b-card-img>
-                  <b-card-img v-else blank-src></b-card-img>
                 </router-link>
                 <b-card-text class="nombre">{{
                   getNombreCreador(currentPage, j)
@@ -121,7 +119,7 @@
                 <b-button type="enviarSerie" variant="primary">Enviar</b-button>
               </b-dropdown-form>
             </b-dropdown>
-            <b-button class="button" @click="seriePendiente()">Añadir a series pendientes</b-button>
+            <b-button v-if="!serieEstaPendiente" class="button" @click="seriePendiente()">Añadir a series pendientes</b-button>
           </b-button-group>
         </b-col>
       </b-row>
@@ -212,6 +210,7 @@ export default {
       perPage: 6,
       currentPage: 1,
       currentPageT: 1,
+      serieEstaPendiente: false,
     };
   },
   methods: {
@@ -402,8 +401,7 @@ export default {
           String(this.pathFotos[(i - 1) * 6 + j])
         );
       } else {
-        return false;
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
+        return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
       }
     },
     acabarLoop() {},
@@ -424,15 +422,13 @@ export default {
     getPosterTemporada(i, j) {
       var path = this.temporadas[(i - 1) * 6 + j];
 
-      console.log(i - 1, j, (i - 1) * 6 + j);
-
-      if (path != undefined) {
+      if (path["poster_path"] != null && path != undefined) {
         console.log(this.temporadas[(i - 1) * 6 + j]["poster_path"]);
         return (
           "https://image.tmdb.org/t/p/original" +
           String(this.temporadas[(i - 1) * 6 + j]["poster_path"])
         );
-      } else return false;
+      } else return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
     },
     getNombreTemporada(i, j) {
       var path = this.temporadas[(i - 1) * 6 + j];
@@ -500,11 +496,17 @@ export default {
             var datosUsuario = JSON.parse(JSON.stringify(doc.data()));
 
             var empezadas = datosUsuario.seriesEmpezadas;
-            console.log(empezadas);
+            var pendientes = datosUsuario.seriesPendientes;
 
             for (var i = 0; i < empezadas.length; i++) {
               if (Object.keys(empezadas[i])[0] == _this.getIdTemporada()) {
                 _this.serieEstaEmpezada = true;
+              }
+            }
+
+            for (var j = 0; j < pendientes.length; j++) {
+              if (pendientes[j] == _this.getIdTemporada()) {
+                _this.serieEstaPendiente = true;
               }
             }
 

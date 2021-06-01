@@ -73,11 +73,9 @@
               <b-card v-for="j in numElementosEquipo" :key="j" class="border-0">
                 <router-link :to="{path: '/persona', query: {id: getIdEquipo(currentPageE, j)}}">
                   <b-card-img
-                    v-if="existeEquipo(currentPageE, j)"
                     :src="getEquipo(currentPageE, j)"
                     :alt="getNombreEquipo(currentPageE, j)"
                   ></b-card-img>
-                  <b-card-img v-else blank-src></b-card-img>
                 </router-link>
                 <b-card-text class="nombre">{{
                   getNombreEquipo(currentPageE, j)
@@ -245,10 +243,14 @@ export default {
     getActor(i, j) {
       if (this.castEpisodio[(i - 1) * 6 + j] != undefined) {
         var path = String(this.castEpisodio[(i - 1) * 6 + j]["profile_path"]);
-        return "https://image.tmdb.org/t/p/original" + path;
+        if (path != "null"){
+          return "https://image.tmdb.org/t/p/original" + path;
+        }
+        else {
+          return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+        }
       } else {
         return "";
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreActor(i, j) {
@@ -273,10 +275,14 @@ export default {
     getEquipo(i, j) {
       if (this.crewEpisodio[(i - 1) * 6 + j] != undefined) {
         var path = String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]);
-        return "https://image.tmdb.org/t/p/original" + path;
+        if (path != "null"){
+          return "https://image.tmdb.org/t/p/original" + path;
+        }
+        else {
+          return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+        }
       } else {
         return "";
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreEquipo(i, j) {
