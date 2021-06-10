@@ -1,5 +1,12 @@
 <template>
   <div class="crearLista">
+    <b-container>
+      <b-row>
+        <b-col>
+          <h1 align="left" class="mt-4 mb-4">Creación de una lista</h1>
+        </b-col>
+      </b-row>
+    </b-container>
     <b-form @submit.prevent="enviarDatos">
       <b-container>
         <b-row>
@@ -77,13 +84,13 @@
               <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
                 <b-card-img :src="getFotoSerie(i, j)" :alt="getTituloSerie(i, j)"></b-card-img>
                 <div class="nombre">{{ getTituloSerie(i, j) }}</div>
-                <b-button class="botonQuitar" v-on:click="eliminarItem(i, j)" v-if="getTituloSerie(i, j) != ''">Eliminar</b-button>
+                <b-button class="botonQuitar mt-2" v-on:click="eliminarItem(i, j)" v-if="getTituloSerie(i, j) != ''">Eliminar</b-button>
               </b-card>
             </b-card-group>
           </b-col>
         </b-row>
       </b-container>
-      <b-button type="submit" variant="primary">Enviar</b-button>
+      <b-button class="mb-2" type="submit" variant="primary">Enviar</b-button>
     </b-form>
   </div>
 </template>

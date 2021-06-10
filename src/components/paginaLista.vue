@@ -14,10 +14,11 @@
           <b-col :key="getKey()">
             <b-card-group deck v-for="i in numFilas" :key="i">
               <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
+                
                 <router-link :to="{path:'/serie', query: { id: getIdSerie(i, j) }}">
                   <b-card-img :src="getFotoSerie(i, j)" :alt="getTituloSerie(i, j)"></b-card-img>
                 </router-link>
-                <div class="nombre"> {{ getTituloSerie(i, j) }}</div>
+                <div class="nombre"> <b-avatar :text="getNumero(i, j)" class="numero" size="sm" v-if="getTituloSerie(i, j) != ''"></b-avatar> {{ getTituloSerie(i, j) }}</div>
               </b-card>
             </b-card-group>
           </b-col>
@@ -114,6 +115,9 @@ export default {
     getPerPage(){
       return this.perPage;
     },
+    getNumero(i, j){
+      return (i - 1) * this.getPerPage() + j + 1;
+    }
   },
 };
 </script>

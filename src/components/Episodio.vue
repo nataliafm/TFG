@@ -3,8 +3,11 @@
     <div v-if="!datosObtenidos">
       {{ buscarEpisodio() }}
     </div>
+    <div v-if="!datosSerieObtenidos">
+      {{ buscarSerie() }}
+    </div>
 
-    <b-container v-if="datosObtenidos">
+    <b-container v-if="datosObtenidos && datosSerieObtenidos">
       <b-row>
         <b-col cols="3" class="mt-4">
           <div>
@@ -17,11 +20,28 @@
             />
           </div>
         </b-col>
-        <b-col cols="9" class="mt-4">
+        <b-col cols="9">
           <div class="descripcion">
-            <h1 align="left">
-              Temporada {{ getNumTemporada() }}, Episodio
-              {{ getNumEpisodio() }}: {{ getTituloEpisodio() }}
+            <h3 align="left">
+              <router-link
+                style="color: #9A7ACD"
+                :to="{ path: '/serie', query: { id: getIdSerie() } }"
+                >{{ getTitulo() }}</router-link
+              >,
+              <router-link
+                style="color: #9A7ACD"
+                :to="{
+                  path: '/temporada',
+                  query: {
+                    id: getIdSerie(),
+                    numero: getNumTemporada(),
+                    nombre: getTitulo(),
+                  },
+                }"
+                >Temporada {{ getNumTemporada() }}</router-link
+              >
+            </h3>
+            <h1 align="left">Episodio {{ getNumEpisodio() }}: {{ getTituloEpisodio() }}
             </h1>
             <p align="left">{{ infoEpisodio["overview"] }}</p>
           </div>
@@ -31,17 +51,23 @@
             <b-pagination
               v-model="currentPageA"
               :total-rows="getNumActores()"
-              :per-page="perPage"
+              :per-page="getPerPage()"
               aria-controls="actores"
               class="mt-2"
+              :key="getKey()"
             ></b-pagination>
-            <b-card-group id="actores">
+            <b-card-group id="actores" deck>
               <b-card
-                v-for="j in numElementosActores"
+                v-for="j in Array(getPerPage()).keys()"
                 :key="j"
                 class="border-0"
               >
-                <router-link :to="{path: '/persona', query: {id: getIdActor(currentPageA, j)}}">
+                <router-link
+                  :to="{
+                    path: '/persona',
+                    query: { id: getIdActor(currentPageA, j) },
+                  }"
+                >
                   <b-card-img
                     :src="getActor(currentPageA, j)"
                     :alt="getNombreActor(currentPageA, j)"
@@ -65,13 +91,19 @@
             <b-pagination
               v-model="currentPageE"
               :total-rows="getNumEquipo()"
-              :per-page="perPage"
+              :per-page="getPerPage()"
               aria-controls="equipo"
               class="mt-2"
+              :key="getKey()"
             ></b-pagination>
-            <b-card-group id="equipo">
-              <b-card v-for="j in numElementosEquipo" :key="j" class="border-0">
-                <router-link :to="{path: '/persona', query: {id: getIdEquipo(currentPageE, j)}}">
+            <b-card-group id="equipo" :key="getKey()">
+              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
+                <router-link
+                  :to="{
+                    path: '/persona',
+                    query: { id: getIdEquipo(currentPageE, j) },
+                  }"
+                >
                   <b-card-img
                     :src="getEquipo(currentPageE, j)"
                     :alt="getNombreEquipo(currentPageE, j)"
@@ -125,7 +157,17 @@ export default {
       currentPageA: 1,
       currentPageE: 1,
       perPage: 6,
+      posterTemporada: "",
+      nombreSerie: "",
+      datosSerieObtenidos: false,
+      llave: true,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     getNumActores() {
@@ -216,6 +258,20 @@ export default {
 
       this.datosObtenidos = true;
     },
+    buscarSerie() {
+      themoviedb.tvSeasons.getById(
+        { id: this.idSerie, season_number: this.numTemporada },
+        this.success3,
+        this.error1
+      );
+    },
+    success3(data) {
+      console.log("Success callback: " + data);
+      var datos = JSON.parse(data);
+
+      this.posterTemporada = datos["poster_path"];
+      this.datosSerieObtenidos = true;
+    },
     error2(data) {
       console.log("Error callback: " + data);
     },
@@ -223,7 +279,7 @@ export default {
       console.log("Error callback: " + data);
     },
     getPoster() {
-      return this.poster;
+      return "https://image.tmdb.org/t/p/original" + this.posterTemporada;
     },
     getIdSerie() {
       return this.idSerie;
@@ -241,12 +297,11 @@ export default {
       return this.infoEpisodio["name"];
     },
     getActor(i, j) {
-      if (this.castEpisodio[(i - 1) * 6 + j] != undefined) {
-        var path = String(this.castEpisodio[(i - 1) * 6 + j]["profile_path"]);
-        if (path != "null"){
+      if (this.castEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
+        var path = String(this.castEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]);
+        if (path != "null") {
           return "https://image.tmdb.org/t/p/original" + path;
-        }
-        else {
+        } else {
           return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
         }
       } else {
@@ -254,13 +309,13 @@ export default {
       }
     },
     getNombreActor(i, j) {
-      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.castEpisodio[(i - 1) * 6 + j]["name"];
+      if (this.castEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.castEpisodio[(i - 1) * this.getPerPage() + j]["name"];
       else return "";
     },
     getRolActor(i, j) {
-      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.castEpisodio[(i - 1) * 6 + j]["character"];
+      if (this.castEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.castEpisodio[(i - 1) * this.getPerPage() + j]["character"];
       else return "";
     },
     getNumElementosActores() {
@@ -273,12 +328,11 @@ export default {
       } else this.numElementosActores = Array.from(Array(6).keys());
     },
     getEquipo(i, j) {
-      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined) {
-        var path = String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]);
-        if (path != "null"){
+      if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
+        var path = String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]);
+        if (path != "null") {
           return "https://image.tmdb.org/t/p/original" + path;
-        }
-        else {
+        } else {
           return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
         }
       } else {
@@ -286,13 +340,13 @@ export default {
       }
     },
     getNombreEquipo(i, j) {
-      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.crewEpisodio[(i - 1) * 6 + j]["name"];
+      if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.crewEpisodio[(i - 1) * this.getPerPage() + j]["name"];
       else return "";
     },
     getRolEquipo(i, j) {
-      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.crewEpisodio[(i - 1) * 6 + j]["job"];
+      if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.crewEpisodio[(i - 1) * this.getPerPage() + j]["job"];
       else return "";
     },
     getNumElementosEquipo() {
@@ -305,25 +359,43 @@ export default {
       } else this.numElementosEquipo = Array.from(Array(6).keys());
     },
     existeEquipo(i, j) {
-      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined) {
-        console.log(String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]));
+      if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
+        console.log(String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]));
         console.log(
-          String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]) == "null"
+          String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]) == "null"
         );
         return (
-          String(this.crewEpisodio[(i - 1) * 6 + j]["profile_path"]) != "null"
+          String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]) != "null"
         );
       } else return false;
     },
     getIdActor(i, j) {
-      if (this.castEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.castEpisodio[(i - 1) * 6 + j]["id"];
+      if (this.castEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.castEpisodio[(i - 1) * this.getPerPage() + j]["id"];
       else return "";
     },
     getIdEquipo(i, j) {
-      if (this.crewEpisodio[(i - 1) * 6 + j] != undefined)
-        return this.crewEpisodio[(i - 1) * 6 + j]["id"];
+      if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined)
+        return this.crewEpisodio[(i - 1) * this.getPerPage() + j]["id"];
       else return "";
+    },
+    myEventHandler(e) {
+      console.log(e.target.innerWidth);
+      if (e.target.innerWidth < 580) {
+        this.perPage = 2;
+      } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200) {
+        this.perPage = 3;
+      } else {
+        this.perPage = 6;
+      }
+
+      this.llave = !this.llave;
+    },
+    getKey() {
+      return this.llave;
+    },
+    getPerPage() {
+      return this.perPage;
     },
   },
 };

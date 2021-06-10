@@ -35,7 +35,7 @@
             <b-form-input
               id="input-username"
               v-model="form.username"
-              type="nombre"
+              type="text"
               placeholder="Introduce tu nombre de usuario"
               required
               :v-model="$v.form.username.$model"
@@ -57,14 +57,33 @@
               id="input-password"
               v-model="form.password"
               type="password"
-              placeholder="Introduce tu contraseña"
               required
-              :v-model="$v.form.username.$model"
+              :v-model="$v.form.password.$model"
               :state="validateState('password')"
               aria-describedby="error-password"
             ></b-form-input>
             <b-form-invalid-feedback id="error-password">
-              Debes introducir una contraseña, y debe tener una longitud mínima de 9 caracteres
+              Debes introducir una contraseña, y debe tener una longitud mínima de 9 caracteres y contener números, mayúsculas y minúsculas
+          </b-form-invalid-feedback>
+          </b-form-group>
+
+          <b-form-group
+            id="passIgual"
+            label="Vuelve a introducir la contraseña:"
+            label-for="input-contrasenia-igual"
+            description=""
+          >
+            <b-form-input
+              id="input-contrasenia-igual"
+              v-model="form.passIgual"
+              type="password"
+              required
+              :v-model="$v.form.passIgual.$model"
+              :state="validateState('passIgual')"
+              aria-describedby="error-passIgual"
+            ></b-form-input>
+            <b-form-invalid-feedback id="error-passIgual">
+              Introduce la misma contraseña
           </b-form-invalid-feedback>
           </b-form-group>
           <b-button type="submit" variant="primary">Enviar</b-button>
@@ -78,6 +97,8 @@
 import firebase from "firebase";
 import { validationMixin } from "vuelidate";
 import { required, email, minLength} from 'vuelidate/lib/validators'
+const contieneNumeros = (value) => /\d/.test(value)
+const contieneMayusculas  = (value) => /[a-z]/.test(value) && /[A-Z]/.test(value)
 
 export default {
   mixins: [validationMixin],
@@ -88,7 +109,8 @@ export default {
       form: {
         email: "",
         username: "",
-        password: ""
+        password: "",
+        passIgual: ""
       },
       error: null,
       show: true,
@@ -104,11 +126,19 @@ export default {
         required, minLength: minLength(9)
       },
       password: {
-        required, minLength: minLength(9)
+        required, minLength: minLength(9), contieneNumeros, contieneMayusculas
+      },
+      passIgual: {
+        required, esIgual(){
+          return this.form.password == this.form.passIgual;
+        }
       }
     }
   },
   methods: {
+    esIgual(){
+      return this.form.password == this.form.passIgual;
+    },
     submit() {
       var d = this.form;
       var _this = this;
@@ -134,7 +164,9 @@ export default {
               seriesFavoritas: [],
               seriesEmpezadas: [],
               seriesPendientes: [],
-              listasSeries: []
+              listasSeries: [],
+              seriesTerminadas: [],
+              alternativo: "",
             })
             .then(function () {
               console.log("Document successfully written!");

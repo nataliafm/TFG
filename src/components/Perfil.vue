@@ -20,7 +20,7 @@
     >
       <b-row cols="3" align-v="stretch">
         <b-col cols="2" class="mt-4">
-          <b-img rounded="circle" fluid :src="getURLperfil()"></b-img>
+          <b-img rounded="circle" fluid :src="getURLperfil()" :alt="datosUsuario.alternativo"></b-img>
         </b-col>
         <b-col cols="8" class="mt-4">
           <h1 class="username">{{ getUsername() }}</h1>
@@ -28,7 +28,7 @@
           <p class="username">{{ getDescripcion() }}</p>
         </b-col>
         <b-col cols="2" class="mt-4">
-          <b-button href="/editarPerfil">Editar perfil</b-button>
+          <b-button href="/editarPerfil"><b-icon-pencil></b-icon-pencil> Editar perfil</b-button>
         </b-col>
       </b-row>
       <b-row>
@@ -51,6 +51,20 @@
               class="border-0"
               deck
             >
+              <b-button
+                v-if="getNombreSerie(currentPageEmpezadas, j) != ''"
+                class="botonQuitar mb-2"
+                size="sm"
+                v-on:click="siguienteCapitulo(currentPageEmpezadas, j)"
+                ><b-icon-check2></b-icon-check2> Visto</b-button
+              >
+              <b-button
+                v-if="getNombreSerie(currentPageEmpezadas, j) != ''"
+                class="botonQuitar mb-2"
+                size="sm"
+                v-on:click="eliminarEmpezadas(currentPageEmpezadas, j)"
+                >Eliminar</b-button
+              >
               <router-link
                 :to="{
                   name: 'episodio',
@@ -74,6 +88,7 @@
               <b-card-text class="rol">
                 {{ getTemporada(currentPageEmpezadas, j) }}
               </b-card-text>
+              
             </b-card>
             <div v-if="seguir1">
               {{ getNumElementosEmpezadas() }}
@@ -93,7 +108,11 @@
             :key="getKey()"
           ></b-pagination>
           <b-card-group deck v-if="renderListas" id="listas" :key="getKey()">
-            <b-card v-for="j in Array(getPerPageLista()).keys()" :key="j" class="border-0">
+            <b-card
+              v-for="j in Array(getPerPageLista()).keys()"
+              :key="j"
+              class="border-0"
+            >
               <router-link
                 :to="{
                   path: '/paginaLista',
@@ -112,7 +131,7 @@
           </b-card-group>
 
           <div align="left" class="mt-4">
-            <b-button href="/crearLista">Crear una nueva lista</b-button>
+            <b-button href="/crearLista"><b-icon-plus></b-icon-plus> Crear una nueva lista</b-button>
           </div>
         </b-col>
       </b-row>
@@ -244,6 +263,8 @@ export default {
       seguir3: true,
       llave: true,
       perPageLista: 3,
+      serieMarcadaVista: "",
+      serieMarcadaVistaTemp: "",
     };
   },
   created() {
@@ -648,32 +669,255 @@ export default {
     },
     myEventHandler(e) {
       console.log(e.target.innerWidth);
-      if (e.target.innerWidth < 580){
-        this.perPage = 1;
-        this.perPageLista = 1;
-      }
-      else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200){
+      if (e.target.innerWidth < 580) {
+        this.perPage = 2;
+        this.perPageLista = 2;
+      } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200) {
         this.perPage = 3;
-        this.perPageLista = 1;
-      }
-      else{
+        this.perPageLista = 2;
+      } else {
         this.perPage = 6;
         this.perPageLista = 3;
       }
-      
+
       this.llave = !this.llave;
     },
-    getKey(){
+    getKey() {
       console.log(this.llave);
       return this.llave;
     },
-    getPerPage(){
+    getPerPage() {
       console.log(this.perPage);
       return this.perPage;
     },
-    getPerPageLista(){
+    getPerPageLista() {
       return this.perPageLista;
-    }
+    },
+    siguienteCapitulo(i, j) {
+      var idSerie = this.getIdSerie(i, j);
+      var temp = this.getNumeroTemporada(i, j);
+      var num = this.getNumCapitulo(i, j);
+      this.serieMarcadaVista = idSerie;
+      this.serieMarcadaVistaTemp = temp;
+
+      //comprobar si existe el siguiente capítulo en la misma temporada
+      themoviedb.tvEpisodes.getById(
+        {
+          id: idSerie,
+          season_number: temp,
+          episode_number: Number(num) + 1,
+        },
+        this.exitoSig1,
+        this.errorSig1
+      );
+    },
+    exitoSig1(data) {
+      console.log("Existe capitulo en la misma temporada");
+      //existe un siguiente capítulo en la misma temporada --> se modifica en la base de datos
+      var datos = JSON.parse(data);
+      var Ltemp = datos["season_number"];
+      var Lnum = datos["episode_number"];
+      var series = JSON.parse(
+        JSON.stringify(this.datosUsuario.seriesEmpezadas)
+      );
+
+      var llaves = series.keys();
+
+      for (const i of llaves) {
+        if (Object.keys(series[i])[0] == this.serieMarcadaVista) {
+          var empezadasUpdated = series;
+          empezadasUpdated[i][this.serieMarcadaVista] = {
+            cap: Lnum,
+            temp: Ltemp,
+          };
+
+          var db = firebase.firestore();
+          var ident = firebase.auth().currentUser.uid;
+          var _this = this;
+
+          db.collection("Usuario")
+            .doc(ident)
+            .set(
+              {
+                seriesEmpezadas: empezadasUpdated,
+              },
+              { merge: true }
+            )
+            .then(function () {
+              console.log("Operación realizada correctamente");
+              _this.$router.go(0);
+            })
+            .catch(function (error) {
+              console.log("Error writing document: ", error);
+            });
+        }
+      }
+    },
+    errorSig1(data) {
+      console.log("No existe capitulo en la misma temporada");
+      //no existe un siguiente capítulo en la misma temporada --> se comprueba si existe la temporada siguiente
+      console.log("Error: ", data);
+      var temp = this.serieMarcadaVistaTemp;
+
+      themoviedb.tvEpisodes.getById(
+        {
+          id: this.serieMarcadaVista,
+          season_number: Number(temp) + 1,
+          episode_number: 1,
+        },
+        this.exitoSig2,
+        this.errorSig2
+      );
+    },
+    exitoSig2(data) {
+      console.log("Existe la siguiente temporada");
+      //existe la siguiente temporada --> se modifica en la base de datos
+      var datos = JSON.parse(data);
+      var Ltemp = datos["season_number"];
+      var Lnum = datos["episode_number"];
+      var series = JSON.parse(
+        JSON.stringify(this.datosUsuario.seriesEmpezadas)
+      );
+
+      var llaves = series.keys();
+
+      for (const i of llaves) {
+        if (Object.keys(series[i])[0] == this.serieMarcadaVista) {
+          var empezadasUpdated = series;
+          empezadasUpdated[i][this.serieMarcadaVista] = {
+            cap: Lnum,
+            temp: Ltemp,
+          };
+
+          var db = firebase.firestore();
+          var ident = firebase.auth().currentUser.uid;
+          var _this = this;
+
+          db.collection("Usuario")
+            .doc(ident)
+            .set(
+              {
+                seriesEmpezadas: empezadasUpdated,
+              },
+              { merge: true }
+            )
+            .then(function () {
+              console.log("Operación realizada correctamente");
+              _this.$router.go(0);
+            })
+            .catch(function (error) {
+              console.log("Error writing document: ", error);
+            });
+        }
+      }
+    },
+    errorSig2(data) {
+      console.log("Error: ", data);
+      console.log("No existe la siguiente temporada");
+      //no existe una siguiente temporada --> la serie está terminada
+
+      //se marca como terminada, comprobando antes si está terminada o sigue en produccion
+      themoviedb.tv.getById(
+        { id: this.serieMarcadaVista },
+        this.exitoSig3,
+        this.errorSig3
+      );
+    },
+    exitoSig3(data) {
+      var datos = JSON.parse(data);
+      var enProduccion = datos["in_production"];
+      var db = firebase.firestore();
+      var ident = firebase.auth().currentUser.uid;
+      var _this = this;
+
+      var serie = {};
+      serie[this.serieMarcadaVista] = { comprobar: enProduccion };
+
+      db.collection("Usuario")
+        .doc(ident)
+        .set(
+          {
+            seriesTerminadas: firebase.firestore.FieldValue.arrayUnion(serie),
+          },
+          { merge: true }
+        )
+        .then(function () {
+          console.log("Operación realizada correctamente");
+
+          var series = JSON.parse(
+            JSON.stringify(_this.datosUsuario.seriesEmpezadas)
+          );
+          var id = _this.serieMarcadaVista;
+
+          var llaves = series.keys();
+
+          for (const i of llaves) {
+            if (Object.keys(series[i])[0] == id) {
+              var empezadasUpdated = series;
+
+              empezadasUpdated.splice(i, 1);
+
+              db.collection("Usuario")
+                .doc(ident)
+                .set(
+                  {
+                    seriesEmpezadas: empezadasUpdated,
+                  },
+                  { merge: true }
+                )
+                .then(function () {
+                  console.log("Operación realizada correctamente");
+                  _this.$router.go(0);
+                })
+                .catch(function (error) {
+                  console.log("Error writing document: ", error);
+                });
+            }
+          }
+        })
+        .catch(function (error) {
+          console.log("Error writing document: ", error);
+        });
+    },
+    errorSig3(data) {
+      console.log("Error: ", data);
+    },
+    eliminarEmpezadas(i, j) {
+      var series = JSON.parse(
+        JSON.stringify(this.datosUsuario.seriesEmpezadas)
+      );
+      var id = this.getIdSerie(i, j);
+
+      var llaves = series.keys();
+
+      for (const i of llaves) {
+        if (Object.keys(series[i])[0] == id) {
+          var empezadasUpdated = series;
+
+          empezadasUpdated.splice(i, 1);
+
+          var db = firebase.firestore();
+          var ident = firebase.auth().currentUser.uid;
+          var _this = this;
+
+          db.collection("Usuario")
+            .doc(ident)
+            .set(
+              {
+                seriesEmpezadas: empezadasUpdated,
+              },
+              { merge: true }
+            )
+            .then(function () {
+              console.log("Operación realizada correctamente");
+              _this.$router.go(0);
+            })
+            .catch(function (error) {
+              console.log("Error writing document: ", error);
+            });
+        }
+      }
+    },
   },
 };
 </script>

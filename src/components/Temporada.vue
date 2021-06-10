@@ -17,27 +17,57 @@
             />
           </div>
         </b-col>
-        <b-col cols="9" class="mt-4">
+        <b-col cols="9">
           <div class="descripcion">
-            <h1 align="left">{{getTituloSerie()}}: Temporada {{ resultado["season_number"] }}</h1>
+            <h3 align="left"><router-link style="color: #9A7ACD" :to="{ path: '/serie', query: { id: getIdSerie() } }">{{ getTituloSerie() }}</router-link>:</h3>
+            
+            <h1 align="left">Temporada {{ resultado["season_number"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
           </div>
           <h3 align="left">Capítulos</h3>
-          <b-card-group class="capitulos" v-for="i in numCapitulos" :key="i">
-            <b-card class="carta">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="getNumEpisodios()"
+            :per-page="getPerPage()"
+            aria-controls="episodios"
+            class="mt-2"
+            :key="getKey()"
+          ></b-pagination>
+          <b-card-group id="episodios" :key="getKey()">
+            <b-card
+              v-for="i in Array(getPerPage()).keys()"
+              :key="i"
+              class="border-0"
+              deck
+            >
               <b-card-body>
-                <b-img :src="getPath(i)" :alt="'Imagen episodio ' + getNumCapitulo(i)" fluid-grow class="imagen"></b-img>
-                <router-link :to="{name:'episodio', query: { id: getIdSerie(), nombre: getTitulo(), temp: getNumeroTemporada(), num: getNumCapitulo(i)}, params: {pathPoster: getPoster()}}">
-                  <b-card-title id="titulo">{{
-                    resultado["episodes"][i]["name"]
-                  }}</b-card-title>
+                <router-link
+                  :to="{
+                    name: 'episodio',
+                    query: {
+                      id: getIdSerie(),
+                      nombre: getTitulo(),
+                      temp: getNumeroTemporada(),
+                      num: getNum(currentPage, i),
+                    },
+                    params: { pathPoster: getPoster() },
+                  }"
+                >
+                  <b-img
+                    :src="getPath(currentPage, i)"
+                    :alt="getNumCapitulo(currentPage, i)"
+                    fluid-grow
+                    class="imagen"
+                  ></b-img>
                 </router-link>
-                <b-card-sub-title>Fecha de estreno: {{
-                  resultado["episodes"][i]["air_date"]
+
+                <b-card-title id="titulo">{{
+                  getNombreEpisodio(currentPage, i)
+                }}</b-card-title>
+                <b-card-sub-title>{{
+                  getFechaEstreno(currentPage, i)
                 }}</b-card-sub-title>
-                <b-card-text>{{
-                  resultado["episodes"][i]["overview"]
-                }}</b-card-text>
+                <b-card-text>{{ getDescripcion(currentPage, i) }}</b-card-text>
               </b-card-body>
             </b-card>
           </b-card-group>
@@ -62,20 +92,61 @@ export default {
       pathsFotos: [],
       idSerie: "",
       numeroTemporada: "",
+      perPage: 3,
+      llave: true,
+      currentPage: 1,
     };
   },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
+  },
   methods: {
-    getIdSerie(){
+    myEventHandler(e) {
+      console.log(e.target.innerWidth);
+      if (e.target.innerWidth < 580) {
+        this.perPage = 1;
+      } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1000) {
+        this.perPage = 2;
+      } else {
+        this.perPage = 3;
+      }
+
+      this.llave = !this.llave;
+    },
+    getKey() {
+      return this.llave;
+    },
+    getPerPage() {
+      return this.perPage;
+    },
+    getNumEpisodios() {
+      return this.resultado["episodes"].length;
+    },
+    getIdSerie() {
       return this.idSerie;
     },
-    getTitulo(){
+    getTitulo() {
       return this.tituloSerie;
     },
-    getNumeroTemporada(){
+    getNumeroTemporada() {
       return this.numeroTemporada;
     },
-    getNumCapitulo(i){
-      return i + 1;
+    getNumCapitulo(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      )
+        return "Imagen episodio " + (i - 1) * this.getPerPage() + j + 1;
+      else return "";
+    },
+    getNum(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      )
+        return (i - 1) * this.getPerPage() + j + 1;
+      else return "";
     },
     buscarTemporada() {
       var _this = this;
@@ -120,11 +191,53 @@ export default {
     getTituloSerie() {
       return this.tituloSerie;
     },
-    getPath(i) {
-      return (
-        "https://image.tmdb.org/t/p/original" +
-        this.resultado["episodes"][i]["still_path"]
-      );
+    getPath(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      ) {
+        var path = String(
+          this.resultado["episodes"][(i - 1) * this.getPerPage() + j][
+            "still_path"
+          ]
+        );
+        if (path != "null") {
+          return "https://image.tmdb.org/t/p/original" + path;
+        } else {
+          return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+        }
+      } else {
+        return "";
+      }
+    },
+    getNombreEpisodio(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      )
+        return this.resultado["episodes"][(i - 1) * this.getPerPage() + j][
+          "name"
+        ];
+      else return "";
+    },
+    getFechaEstreno(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      )
+        return (
+          "Fecha de estreno: " +
+          this.resultado["episodes"][(i - 1) * this.getPerPage() + j][
+            "air_date"
+          ]
+        );
+      else return "";
+    },
+    getDescripcion(i, j) {
+      if (
+        this.resultado["episodes"][(i - 1) * this.getPerPage() + j] != undefined
+      )
+        return this.resultado["episodes"][(i - 1) * this.getPerPage() + j][
+          "overview"
+        ];
+      else return "";
     },
   },
 };
@@ -144,7 +257,7 @@ li {
   margin: 0 10px;
 }
 a {
-  color: #4B4453;
+  color: #4b4453;
 }
 .capitulos {
   width: 100%;

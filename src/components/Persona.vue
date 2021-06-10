@@ -150,7 +150,7 @@ export default {
     },
     getFotoSerieE(i, j) {
       if (this.creditosTV["crew"][(i - 1) * this.getPerPage() + j] != undefined) {
-        var path = String(this.creditosTV["crew"][(i - 1) * this.getPerPage() + j]["profile_path"]);
+        var path = String(this.creditosTV["crew"][(i - 1) * this.getPerPage() + j]["poster_path"]);
         if (path != "null" && path != "undefined"){
           return "https://image.tmdb.org/t/p/original" + path;
         }

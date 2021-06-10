@@ -3,22 +3,142 @@
     <div v-if="!datosObtenidos">
       {{ obtenerDatosUsuario() }}
     </div>
-    <b-form @submit.prevent="enviarDatos" v-if="show">
+    <b-container>
+      <b-row>
+        <b-col>
+          <h1 align="left" class="mt-4 mb-4">Edición de perfil</h1>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-container>
+      <b-row>
+        <b-col cols="6">
+          <h3 class="mt-4 mb-4">Actualizar la foto de perfil</h3>
+          <b-row align-h="center">
+            <b-col cols="3">
+              <div class="mb-2">Imagen actual:</div>
+              <b-img rounded="circle" fluid :src="fotoPerfil" alt="Imagen de perfil actual" class="mb-4"></b-img>
+            </b-col>
+          </b-row>
+          <b-form @submit.prevent="enviarArchivo" class="mt-4">
+            <b-container>
+              <b-row align-v="center">
+                <b-col>
+                  <b-form-group
+                    id="foto"
+                    label-for="input-foto"
+                    label="Nueva imagen: "
+                    description=""
+                  >
+                    <b-form-file
+                      v-model="file1"
+                      placeholder="Choose a file or drop it here..."
+                      drop-placeholder="Drop file here..."
+                      accept="image/jpeg, image/png"
+                    ></b-form-file>
+                  </b-form-group>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-col>
+                  <div class="mb-4">Para evitar que se recorte, asegúrate de que la foto es cuadrada</div>
+                  <b-button type="submit" variant="primary">Enviar</b-button>
+                </b-col>
+              </b-row>
+            </b-container>
+          </b-form>
+        </b-col>
+        <b-col cols="6">
+          <h3 class="mt-4 mb-4">Actualizar la contraseña</h3>
+          <b-form @submit.prevent="cambiarContrasenia">
+            <b-container>
+              <b-row>
+                <b-col>
+                  <b-form-group
+                    id="passActual"
+                    label="Introduce la contraseña actual: "
+                    label-for="input-passActual"
+                    description=""
+                  >
+                    <b-form-input
+                      id="input-passActual"
+                      type="password"
+                      v-model="form.passActual"
+                      :state="validateState('passActual')"
+                    ></b-form-input>
+                  </b-form-group>
+                  <b-form-group
+                    id="passNueva"
+                    label="Introduce la nueva contraseña: "
+                    label-for="input-passNueva"
+                    description=""
+                  >
+                    <b-form-input
+                      id="input-passNueva"
+                      type="password"
+                      v-model="form.passNueva"
+                      :state="validateState('passNueva')"
+                      aria-describedby="error-password"
+                    ></b-form-input>
+                    <b-form-invalid-feedback id="error-password">
+                      Debes introducir una contraseña válida, con una longitud
+                      de mínimo 9 caracteres, números y tanto mayúsculas como
+                      minúsculas
+                    </b-form-invalid-feedback>
+                  </b-form-group>
+                  <b-form-group
+                    id="passNuevaIgual"
+                    label="Vuelve a introducir la nueva contraseña: "
+                    label-for="input-passNuevaIgual"
+                    description=""
+                  >
+                    <b-form-input
+                      id="input-passNuevaIgual"
+                      type="password"
+                      v-model="form.passNuevaIgual"
+                      :state="validateState('passNuevaIgual')"
+                      aria-describedby="error-password-igual"
+                    ></b-form-input>
+                    <b-form-invalid-feedback id="error-password-igual">
+                      Debes introducir la misma contraseña
+                    </b-form-invalid-feedback>
+                  </b-form-group>
+                </b-col>
+              </b-row>
+              <b-col>
+                <b-button type="submit" variant="primary" class="mt-2"
+                  >Enviar</b-button
+                >
+              </b-col>
+            </b-container>
+          </b-form>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-container>
+      <b-row>
+        <b-col>
+          <h3 class="mt-4 mb-4">Actualizar los datos del perfil</h3>
+        </b-col>
+      </b-row>
+    </b-container>
+    <b-form @submit.prevent="enviarDatos" v-if="show" class="mt-4">
       <b-container>
         <b-row>
           <b-col cols="6">
             <b-form-group
-              id="foto"
-              label="Foto de usuario: "
-              label-for="input-foto"
+              id="texto"
+              label="Texto alternativo de la foto de perfil: "
+              label-for="input-texto"
               description=""
             >
-              <b-form-file
-                v-model="file1"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
-                accept="image/jpeg, image/png"
-              ></b-form-file>
+              <b-form-input
+                id="input-texto"
+                name="textoalt"
+                type="text"
+                placeholder="Introduce una descripción de la foto de perfil"
+                v-model="form.alternativo"
+              ></b-form-input>
             </b-form-group>
 
             <b-form-group
@@ -102,7 +222,7 @@
                 Este correo electrónico ya está asociado a una cuenta.
               </div>
             </b-form-group>
-
+            <!--
             <b-form-group
               id="password"
               label="Contraseña: "
@@ -111,16 +231,18 @@
             >
               <b-form-input
                 id="input-password"
-                name="password"
                 type="password"
-                v-model="$v.form.password.$model"
+                v-model="form.password"
+                :v-model="$v.form.password.$model"
                 :state="validateState('password')"
                 aria-describedby="error-password"
               ></b-form-input>
               <b-form-invalid-feedback id="error-password">
-                Debes introducir una contraseña válida
+                Debes introducir una contraseña válida, con una longitud de
+                mínimo 9 caracteres, números y tanto mayúsculas como minúsculas
               </b-form-invalid-feedback>
             </b-form-group>
+-->
           </b-col>
           <b-col cols="6">
             <b-form-group
@@ -171,11 +293,27 @@
                   <div v-if="serieYaEsta" style="color: red">
                     Esta serie ya está en tu lista de favoritos
                   </div>
-                  <b-list-group >
-                    <b-list-group horizontal="md" v-for="i in seriesFavoritas.length" :key="i">
-                      <b-list-group-item class="border-0 align-items-center w-100">
-                        <div class="nombreSerie mt-1">{{ Object.values(JSON.parse(JSON.stringify(seriesFavoritas))[i-1])[0]["nombre"] }}</div>
-                        <b-button class="botonQuitar ml-4" v-on:click="eliminarItem(i-1)">X</b-button>
+                  <b-list-group>
+                    <b-list-group
+                      horizontal="md"
+                      v-for="i in seriesFavoritas.length"
+                      :key="i"
+                    >
+                      <b-list-group-item
+                        class="border-0 align-items-center w-100"
+                      >
+                        <div class="nombreSerie mt-1">
+                          {{
+                            Object.values(
+                              JSON.parse(JSON.stringify(seriesFavoritas))[i - 1]
+                            )[0]["nombre"]
+                          }}
+                        </div>
+                        <b-button
+                          class="botonQuitar ml-4"
+                          v-on:click="eliminarItem(i - 1)"
+                          >Eliminar</b-button
+                        >
                       </b-list-group-item>
                     </b-list-group>
                   </b-list-group>
@@ -193,8 +331,12 @@
 <script>
 import firebase from "firebase";
 import { validationMixin } from "vuelidate";
-import { minLength, email } from "vuelidate/lib/validators";
+import { minLength, email, required } from "vuelidate/lib/validators";
 import themoviedb from "themoviedb-javascript-library";
+
+const contieneNumeros = (value) => /\d/.test(value);
+const contieneMayusculas = (value) =>
+  /[a-z]/.test(value) && /[A-Z]/.test(value);
 
 export default {
   mixins: [validationMixin],
@@ -211,9 +353,12 @@ export default {
         pais: "",
         username: "",
         seriesFavoritas: {},
+        alternativo: "",
+        passActual: "",
+        passNueva: "",
+        passNuevaIgual: "",
       },
       datosObtenidos: false,
-      password: "",
       descripcion: "",
       email: "",
       fotoPerfil: "",
@@ -221,6 +366,7 @@ export default {
       nombre: "",
       pais: "",
       username: "",
+      alternativo: "",
       seriesFavoritas: {},
       longOriginal: "",
       usernameEnUso: false,
@@ -229,6 +375,7 @@ export default {
       series: [],
       serieElegida: [],
       serieYaEsta: false,
+      emailEnUso: false,
       paises: [
         "Afghanistan",
         "Albania",
@@ -447,8 +594,21 @@ export default {
       email: {
         email,
       },
-      password: {
+      passActual: {
+        required,
+      },
+      passNueva: {
+        required,
         minLength: minLength(9),
+        contieneNumeros,
+        contieneMayusculas,
+      },
+      passNuevaIgual: {
+        required,
+        esIgual() {
+          console.log(this.form.passNueva);
+          return this.form.passNueva == this.form.passNuevaIgual;
+        },
       },
       descripcion: {},
     },
@@ -477,6 +637,7 @@ export default {
             _this.seriesFavoritas = data.seriesFavoritas;
             _this.longOriginal = _this.seriesFavoritas.length;
             _this.datosObtenidos = true;
+            _this.alternativo = data.alternativo;
           } else {
             console.log("No such document!");
           }
@@ -503,35 +664,38 @@ export default {
     getPais() {
       return this.pais;
     },
-    enviarDatos() {
+    cambiarContrasenia() {
+      var user = firebase.auth().currentUser;
+      console.log(user);
+      var _this = this;
+
+      var credential = firebase.auth.EmailAuthProvider.credential(
+        this.email,
+        this.form.passActual
+      );
+
+      user.reauthenticateWithCredential(credential).then(function () {
+        user
+          .updatePassword(_this.form.passNueva)
+          .then(function () {
+            console.log("Document successfully written!");
+            _this.$router.push({ path: "/perfil" });
+          })
+          .catch(function (error) {
+            console.log("Error writing document: ", error);
+          });
+      });
+    },
+    enviarArchivo() {
       var ident = this.idUsuario;
       var db = firebase.firestore();
       var _this = this;
-
-      var nombre, username, descripcion, pais, correo, seriesFavoritas;
-      if (this.$v.form.nombre.$model == "") nombre = this.nombre;
-      else nombre = this.$v.form.nombre.$model;
-
-      if (this.$v.form.username.$model == "") username = this.username;
-      else username = this.$v.form.username.$model;
-
-      if (this.$v.form.descripcion.$model == "") descripcion = this.descripcion;
-      else descripcion = this.$v.form.descripcion.$model;
-
-      if (this.form.pais == "") pais = this.pais;
-      else pais = this.form.pais;
-
-      if (this.form.email == "") correo = this.email;
-      else correo = this.form.email;
-
-      seriesFavoritas = this.seriesFavoritas;
 
       if (this.file1) {
         var ref = firebase.storage().ref();
         var path = ref.child("images/" + this.file1.name);
 
         path.put(this.file1).then(function (snapshot) {
-          console.log("archivo subido");
           snapshot.ref.getDownloadURL().then(function (url) {
             db.collection("Usuario")
               .doc(ident)
@@ -543,17 +707,73 @@ export default {
               )
               .then(function () {
                 console.log("documento escrito");
+                _this.$router.push({ path: "/perfil" });
               });
           });
         });
       }
+    },
+    enviarDatos() {
+      var ident = this.idUsuario;
+      var db = firebase.firestore();
+      var _this = this;
 
+      var nombre,
+        username,
+        descripcion,
+        pais,
+        correo,
+        seriesFavoritas,
+        alternativo;
+      if (this.$v.form.nombre.$model == "") nombre = this.nombre;
+      else nombre = this.$v.form.nombre.$model;
+
+      if (this.$v.form.username.$model == "") username = this.username;
+      else username = this.$v.form.username.$model;
+
+      if (this.$v.form.descripcion.$model == "") descripcion = this.descripcion;
+      else descripcion = this.$v.form.descripcion.$model;
+
+      if (this.form.alternativo == "") alternativo = this.alternativo;
+      else alternativo = this.form.alternativo;
+
+      if (this.form.pais == "") pais = this.pais;
+      else pais = this.form.pais;
+
+      if (this.form.email == "") correo = this.email;
+      else correo = this.form.email;
+
+      seriesFavoritas = this.seriesFavoritas;
+      /*
+      if (this.file1) {
+        var ref = firebase.storage().ref();
+        var path = ref.child("images/" + this.file1.name);
+
+        path.put(this.file1).then(function (snapshot) {
+          snapshot.ref.getDownloadURL().then(function (url) {
+            db.collection("Usuario")
+              .doc(ident)
+              .set(
+                {
+                  fotoPerfil: url,
+                },
+                { merge: true }
+              )
+              .then(function () {
+                console.log("documento escrito");
+                _this.$router.push({ path: "/perfil" });
+              });
+          });
+        });
+      }
+*/
       if (
         this.nombre != nombre ||
         this.pais != pais ||
         this.username != username ||
         this.descripcion != descripcion ||
-        this.seriesFavoritas.length != this.longOriginal
+        this.seriesFavoritas.length != this.longOriginal ||
+        this.alternativo != alternativo
       ) {
         db.collection("Usuario")
           .doc(ident)
@@ -563,22 +783,24 @@ export default {
               username: username,
               descripcion: descripcion,
               pais: pais,
-              seriesFavoritas: JSON.parse(JSON.stringify(seriesFavoritas)
-              ),
+              alternativo: alternativo,
+              seriesFavoritas: JSON.parse(JSON.stringify(seriesFavoritas)),
             },
             { merge: true }
           )
           .then(function () {
             console.log("Document successfully written!");
 
-            if (_this.email != correo || _this.$v.form.password.$model != "") {
+            if (
+              _this.email != correo /*|| _this.$v.form.password.$model != ""*/
+            ) {
               var user = firebase.auth().currentUser;
 
               user
                 .updateEmail(correo)
                 .then(function () {
                   console.log("Document successfully written!");
-
+                  /*
                   if (_this.$v.form.password.$model != undefined) {
                     user
                       .updatePassword(_this.$v.form.password.$model)
@@ -592,6 +814,7 @@ export default {
                   } else {
                     _this.$router.push({ path: "/perfil" });
                   }
+                  */
 
                   _this.$router.push({ path: "/perfil" });
                 })
@@ -599,8 +822,10 @@ export default {
                   console.log("Error writing document: ", error);
                   var err = error.code;
                   switch (err) {
-                    case "auth/email-already-in-use": this.emailEnUso = true; break;
-          }
+                    case "auth/email-already-in-use":
+                      this.emailEnUso = true;
+                      break;
+                  }
                 });
             } else {
               _this.$router.push({ path: "/perfil" });
@@ -609,14 +834,17 @@ export default {
           .catch(function (error) {
             console.log("Error writing document: ", error);
           });
-      } else if (this.email != correo || this.$v.form.password.$model != undefined) {
+      } else if (
+        this.email != correo /* ||
+        this.$v.form.password.$model != undefined*/
+      ) {
         var user = firebase.auth().currentUser;
 
         user
           .updateEmail(correo)
           .then(function () {
             console.log("Document successfully written!");
-
+            /*
             if (_this.$v.form.password.$model != "") {
               user
                 .updatePassword(_this.$v.form.password.$model)
@@ -630,7 +858,7 @@ export default {
             } else {
               _this.$router.push({ path: "/perfil" });
             }
-
+*/
             _this.$router.push({ path: "/perfil" });
           })
           .catch(function (error) {
@@ -672,31 +900,31 @@ export default {
         }
       }
 
-      if (!yaEsta){
+      if (!yaEsta) {
         var aux = {};
         aux[id] = { nombre: this.form.serie };
         console.log(this.seriesFavoritas);
-        
+
         this.seriesFavoritas.push(aux);
         this.serieYaEsta = false;
-      }
-      else{
+      } else {
         this.serieYaEsta = true;
       }
     },
     eliminarItem(i) {
-      var id = Object.keys(JSON.parse(JSON.stringify(this.seriesFavoritas))[i])[0];
+      var id = Object.keys(
+        JSON.parse(JSON.stringify(this.seriesFavoritas))[i]
+      )[0];
       var series = JSON.parse(JSON.stringify(this.seriesFavoritas));
       var indice = -1;
 
       var llaves = this.seriesFavoritas.keys();
-      for (const k of llaves){
-        if (Object.keys(series[k]) == id)
-          indice = k;
+      for (const k of llaves) {
+        if (Object.keys(series[k]) == id) indice = k;
       }
 
       this.seriesFavoritas.splice(indice, 1);
-    }
+    },
   },
 };
 </script>

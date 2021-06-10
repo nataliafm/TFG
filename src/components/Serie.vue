@@ -25,7 +25,7 @@
               fluid-grow
               class="poster"
             />
-            <div class="proveedores">
+            <div class="proveedores" v-if="renderProviders">
               <b-button :href="providers['link']" class="enlaceStream"
                 >Comprar / stream</b-button
               >
@@ -46,12 +46,13 @@
             <b-pagination
               v-model="currentPage"
               :total-rows="getNumCreadores()"
-              :per-page="perPage"
+              :per-page="getPerPage()"
               aria-controls="creadores"
               class="mt-2"
+              :key="getKey()"
             ></b-pagination>
-            <b-card-group id="creadores">
-              <b-card v-for="j in numElementos" :key="j" class="border-0">
+            <b-card-group id="creadores" :key="getKey()">
+              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
                 <router-link :to="{path: '/persona', query: {id: getIdPersona(currentPage, j)}}">
                   <b-card-img
                     :src="getCreador(currentPage, j)"
@@ -133,12 +134,13 @@
             <b-pagination
               v-model="currentPageT"
               :total-rows="getNumTemporadas()"
-              :per-page="perPage"
+              :per-page="getPerPage()"
               aria-controls="temporadas"
               class="mt-2"
+              :key="getKey()"
             ></b-pagination>
-            <b-card-group id="temporadas">
-              <b-card v-for="j in numTemporada" :key="j" class="border-0">
+            <b-card-group id="temporadas" :key="getKey()">
+              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
                 <router-link
                   :to="{
                     path: '/temporada',
@@ -211,7 +213,15 @@ export default {
       currentPage: 1,
       currentPageT: 1,
       serieEstaPendiente: false,
+      renderProviders: true,
+      llave: true,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     getNumTemporadas() {
@@ -222,10 +232,10 @@ export default {
       return _this.$route.query.id;
     },
     getNumeroTemporada(i, j) {
-      var path = this.temporadas[(i - 1) * 6 + j];
+      var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       if (path != undefined)
-        return this.temporadas[(i - 1) * 6 + j]["season_number"];
+        return this.temporadas[(i - 1) * this.getPerPage() + j]["season_number"];
       else return "";
     },
     success1(data) {
@@ -269,7 +279,9 @@ export default {
       var proveedores = JSON.parse(data);
       var userLocale = getUserLocales();
 
-      this.providers = proveedores["results"][userLocale.toUpperCase()];
+      if (proveedores["results"][userLocale.toUpperCase()] != undefined)
+        this.providers = proveedores["results"][userLocale.toUpperCase()];
+      else this.renderProviders = false;
     },
     error2(data) {
       console.log("Error callback: " + data);
@@ -392,13 +404,13 @@ export default {
       console.log("Error callback: " + data);
     },
     getCreador(i, j) {
-      var path = String(this.pathFotos[(i - 1) * 6 + j]);
+      var path = String(this.pathFotos[(i - 1) * this.getPerPage() + j]);
       console.log(path);
 
       if (path != "NODISPONIBLE" && path != undefined) {
         return (
           "https://image.tmdb.org/t/p/original" +
-          String(this.pathFotos[(i - 1) * 6 + j])
+          String(this.pathFotos[(i - 1) * this.getPerPage() + j])
         );
       } else {
         return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
@@ -406,36 +418,35 @@ export default {
     },
     acabarLoop() {},
     getNombreCreador(i, j) {
-      if (this.creadores[(i - 1) * 6 + j] != undefined) {
-        return this.creadores[(i - 1) * 6 + j]["name"];
+      if (this.creadores[(i - 1) * this.getPerPage() + j] != undefined) {
+        return this.creadores[(i - 1) * this.getPerPage() + j]["name"];
       } else {
-        console.log("HIIIIII");
         return "";
       }
     },
     getExisteCreador(i, j) {
-      return this.pathFotos[(i - 1) * 6 + j] != undefined;
+      return this.pathFotos[(i - 1) * this.getPerPage() + j] != undefined;
     },
     getExisteTemporada(i, j) {
-      return this.temporadas[(i - 1) * 6 + j] != undefined;
+      return this.temporadas[(i - 1) * this.getPerPage() + j] != undefined;
     },
     getPosterTemporada(i, j) {
-      var path = this.temporadas[(i - 1) * 6 + j];
+      var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       if (path["poster_path"] != null && path != undefined) {
-        console.log(this.temporadas[(i - 1) * 6 + j]["poster_path"]);
+        console.log(this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"]);
         return (
           "https://image.tmdb.org/t/p/original" +
-          String(this.temporadas[(i - 1) * 6 + j]["poster_path"])
+          String(this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"])
         );
       } else return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
     },
     getNombreTemporada(i, j) {
-      var path = this.temporadas[(i - 1) * 6 + j];
+      var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
-      console.log(i - 1, j, (i - 1) * 6 + j, "fea");
+      console.log(i - 1, j, (i - 1) * this.getPerPage() + j, "fea");
 
-      if (path != undefined) return this.temporadas[(i - 1) * 6 + j]["name"];
+      if (path != undefined) return this.temporadas[(i - 1) * this.getPerPage() + j]["name"];
       else return "";
     },
     getCapitulos() {
@@ -556,12 +567,30 @@ export default {
         });
     },
     getIdPersona(i, j) {
-      if (this.creadores[(i - 1) * 6 + j] != undefined) {
-        return this.creadores[(i - 1) * 6 + j]["id"];
+      if (this.creadores[(i - 1) * this.getPerPage() + j] != undefined) {
+        return this.creadores[(i - 1) * this.getPerPage() + j]["id"];
       } else {
         return "";
       }
-    }
+    },
+    myEventHandler(e) {
+      console.log(e.target.innerWidth);
+      if (e.target.innerWidth < 580) {
+        this.perPage = 1;
+      } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200) {
+        this.perPage = 3;
+      } else {
+        this.perPage = 6;
+      }
+
+      this.llave = !this.llave;
+    },
+    getKey() {
+      return this.llave;
+    },
+    getPerPage() {
+      return this.perPage;
+    },
   },
 };
 </script>
@@ -618,9 +647,6 @@ h3 {
   margin-top: 1em;
   color: #4b4453;
   font-size: small;
-}
-.posterTemporada {
-  max-height: 200px;
 }
 .card {
   color: rgb(0, 0, 0);
