@@ -17,6 +17,7 @@ import EditarPerfil from "./components/editarPerfil.vue";
 import CrearLista from "./components/crearLista.vue";
 import PaginaLista from "./components/paginaLista.vue";
 import Persona from "./components/Persona.vue";
+import Busqueda from "./components/Busqueda.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -57,6 +58,7 @@ const router = new VueRouter({
     { path: '/crearLista', name: 'crearLista', component: CrearLista },
     { path: '/paginaLista', name: 'paginaLista', component: PaginaLista },
     { path: '/persona', name: 'persona', component: Persona },
+    { path: '/busqueda', name: 'busqueda', component: Busqueda },
   ]
 });
 
