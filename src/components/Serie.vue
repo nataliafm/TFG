@@ -12,12 +12,21 @@
     <div v-if="!serieComprobada">
       {{ comprobarSerie() }}
     </div>
+    <div v-if="!reviewsObtenidos">
+      {{ getReviews() }}
+    </div>
 
     <b-container
-      :v-if="obtenido1 && obtenido2 && terminaCargar1 && terminaCargar2"
+      v-if="
+        obtenido1 &&
+        obtenido2 &&
+        terminaCargar1 &&
+        terminaCargar2 &&
+        reviewsObtenidos
+      "
     >
       <b-row>
-        <b-col cols="3" class="mt-4">
+        <b-col cols="2" class="mt-4">
           <div v-if="terminaCargar1">
             <b-img
               :src="getPoster()"
@@ -52,8 +61,17 @@
               :key="getKey()"
             ></b-pagination>
             <b-card-group id="creadores" :key="getKey()">
-              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
-                <router-link :to="{path: '/persona', query: {id: getIdPersona(currentPage, j)}}">
+              <b-card
+                v-for="j in Array(getPerPage()).keys()"
+                :key="j"
+                class="border-0"
+              >
+                <router-link
+                  :to="{
+                    path: '/persona',
+                    query: { id: getIdPersona(currentPage, j) },
+                  }"
+                >
                   <b-card-img
                     :src="getCreador(currentPage, j)"
                     :alt="getNombreCreador(currentPage, j)"
@@ -71,12 +89,8 @@
           </div>
         </b-col>
 
-        <b-col cols="2" class="mt-4">
-          <b-button-group
-            vertical
-            class="botones"
-            v-if="serieComprobada"
-          >
+        <b-col cols="3" class="mt-4">
+          <b-button-group vertical class="botones" v-if="serieComprobada">
             <b-dropdown
               class="boton"
               text="Añadir a series empezadas"
@@ -120,8 +134,24 @@
                 <b-button type="enviarSerie" variant="primary">Enviar</b-button>
               </b-dropdown-form>
             </b-dropdown>
-            <b-button v-if="!serieEstaPendiente" class="button" @click="seriePendiente()">Añadir a series pendientes</b-button>
+            <b-button
+              v-if="!serieEstaPendiente"
+              class="button"
+              @click="seriePendiente()"
+              >Añadir a series pendientes</b-button
+            >
           </b-button-group>
+          <bar-chart
+            :chartdata="datos"
+            :options="options"
+            :height="200"
+            class="mt-4"
+          />
+          <div>Nota media: {{ getNotaMedia() * 2}}</div>
+          <b-form-rating
+            v-model="notaMedia"
+            readonly
+          ></b-form-rating>
         </b-col>
       </b-row>
       <b-row>
@@ -140,7 +170,11 @@
               :key="getKey()"
             ></b-pagination>
             <b-card-group id="temporadas" :key="getKey()">
-              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
+              <b-card
+                v-for="j in Array(getPerPage()).keys()"
+                :key="j"
+                class="border-0"
+              >
                 <router-link
                   :to="{
                     path: '/temporada',
@@ -168,6 +202,91 @@
               </div>
             </b-card-group>
           </div>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col class="temporadas" v-if="reviewsObtenidos">
+          <h3 align="left" class="mb-4">Últimas reseñas:</h3>
+          <b-card-group>
+            <b-row>
+              <b-col cols="12">
+                <b-card
+                  no-body
+                  class="overflow-hidden border-0 mb-3 text-left"
+                  v-for="i in Array(idsReviews.length).keys()"
+                  :key="i"
+                >
+                  <b-container>
+                    <b-row no-gutters>
+                      <b-col md="1">
+                        <b-img
+                          :src="getIconoReview(i)"
+                          :alt="getIconoAlt(i)"
+                          fluid
+                          rounded="circle"
+                        ></b-img>
+                      </b-col>
+                      <b-col md="11">
+                        <b-card-body>
+                          <b-row>
+                            <b-col md="5">
+                              <b-form-rating
+                                v-model="reviews[i].nota"
+                                readonly
+                                stars="10"
+                              ></b-form-rating>
+                            </b-col>
+                          </b-row>
+                          <b-row class="mt-2">
+                            <b-col>
+                              <b-card-text>{{ getReviewTexto(i) }}</b-card-text>
+                            </b-col>
+                          </b-row>
+                        </b-card-body>
+                      </b-col>
+                    </b-row>
+                  </b-container>
+                </b-card>
+              </b-col>
+            </b-row>
+          </b-card-group>
+          <h4 align="left" class="mb-4">Escribe una reseña</h4>
+          <b-form @submit.prevent="submit">
+            <b-form-group
+              id="nota"
+              label="Nota:"
+              label-for="input-nota"
+              description=""
+            >
+              <b-form-rating
+                v-model="form.nota"
+                required
+                id="input-nota"
+                name="nota"
+                stars="10"
+              >
+              </b-form-rating>
+            </b-form-group>
+
+            <b-form-group
+              id="texto"
+              label="Reseña:"
+              label-for="input-texto"
+              description=""
+            >
+              <b-form-textarea
+                v-model="form.texto"
+                required
+                id="input-texto"
+                name="texto"
+                rows="5"
+              >
+              </b-form-textarea>
+            </b-form-group>
+            <b-button type="submit" variant="primary" class="mb-4"
+              >Enviar</b-button
+            >
+          </b-form>
         </b-col>
       </b-row>
     </b-container>
@@ -215,6 +334,68 @@ export default {
       serieEstaPendiente: false,
       renderProviders: true,
       llave: true,
+      form: {
+        nota: "",
+        texto: "",
+      },
+      reviewsObtenidos: false,
+      reviews: [],
+      idsReviews: [],
+      notas: [],
+      notaMedia: 0.0,
+      datos: {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        datasets: [
+          {
+            label: "Número de votos",
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            backgroundColor: [
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+            ],
+            borderColor: [
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+            ],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          x: {
+            ticks: {
+              type: "linear",
+              min: 0,
+              stepSize: 1,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              type: "linear",
+              min: 0,
+              stepSize: 1,
+            },
+          },
+        },
+      },
     };
   },
   created() {
@@ -235,7 +416,9 @@ export default {
       var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       if (path != undefined)
-        return this.temporadas[(i - 1) * this.getPerPage() + j]["season_number"];
+        return this.temporadas[(i - 1) * this.getPerPage() + j][
+          "season_number"
+        ];
       else return "";
     },
     success1(data) {
@@ -434,19 +617,25 @@ export default {
       var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       if (path["poster_path"] != null && path != undefined) {
-        console.log(this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"]);
+        console.log(
+          this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"]
+        );
         return (
           "https://image.tmdb.org/t/p/original" +
-          String(this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"])
+          String(
+            this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"]
+          )
         );
-      } else return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+      } else
+        return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
     },
     getNombreTemporada(i, j) {
       var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       console.log(i - 1, j, (i - 1) * this.getPerPage() + j, "fea");
 
-      if (path != undefined) return this.temporadas[(i - 1) * this.getPerPage() + j]["name"];
+      if (path != undefined)
+        return this.temporadas[(i - 1) * this.getPerPage() + j]["name"];
       else return "";
     },
     getCapitulos() {
@@ -472,7 +661,6 @@ export default {
     enviarSerie() {
       var db = firebase.firestore();
       var ident = firebase.auth().currentUser.uid;
-      console.log(this.aniadirTemporada, this.aniadirCapitulo);
       var id = this.getIdTemporada();
 
       var serie = {};
@@ -544,21 +732,22 @@ export default {
             var data = JSON.parse(JSON.stringify(doc.data()));
             var seriesPendientes = data.seriesPendientes;
 
-            if (!seriesPendientes.includes(id))
-              seriesPendientes.push(id);
+            if (!seriesPendientes.includes(id)) seriesPendientes.push(id);
 
             ref
-              .set({
-                seriesPendientes: seriesPendientes
-              }, { merge: true })
+              .set(
+                {
+                  seriesPendientes: seriesPendientes,
+                },
+                { merge: true }
+              )
               .then(function () {
                 console.log("Document successfully written!");
               })
               .catch(function (error) {
                 console.log("Error writing document: ", error);
               });
-          }
-          else {
+          } else {
             console.log("No such document!");
           }
         })
@@ -590,6 +779,214 @@ export default {
     },
     getPerPage() {
       return this.perPage;
+    },
+    submit() {
+      console.log(this.form.nota);
+      console.log(this.form.texto);
+
+      var _this = this;
+      var db = firebase.firestore();
+      var ref = db.collection("Reviews");
+      var ident = firebase.auth().currentUser.uid;
+
+      ref
+        .add({
+          // guarda reseña en documento  de Reviews
+          nota: _this.form.nota,
+          texto: _this.form.texto,
+          usuario: ident,
+        })
+        .then((docRef) => {
+          console.log("Document written with ID: ", docRef.id); //id generado
+          /*
+          var ident = firebase.auth().currentUser.uid;
+          var ref1 = db.collection("Usuario").doc(ident);
+*/
+          var idSerie = "serie" + this.getIdTemporada();
+          var ref2 = db.collection("Contenidos").doc(idSerie);
+          /*
+          ref1
+            .update({
+              // guarda id de la reseña en documento de Usuario
+              reviews: firebase.firestore.FieldValue.arrayUnion(docRef.id),
+            })
+            .then((data) => {
+              console.log("Document written successfully: ", data);
+            })
+            .catch((error) => {
+              console.error("Error adding document: ", error);
+            });
+*/
+          ref2 //guarda id de la reseña en documento de la serie
+            .get()
+            .then((doc) => {
+              if (doc.exists) {
+                //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
+                var a = doc.data().notas;
+
+                console.log(a[_this.form.nota]);
+                if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
+                else a[_this.form.nota] += 1;
+
+                ref2
+                  .update({
+                    reviews: firebase.firestore.FieldValue.arrayUnion(
+                      docRef.id
+                    ),
+                    notas: a,
+                  })
+                  .then((data) => {
+                    console.log("Document written successfully: ", data);
+                    this.$router.go();
+                  })
+                  .catch((error) => {
+                    console.error("Error adding document: ", error);
+                    this.$router.go();
+                  });
+              } else {
+                //esta es la primera reseña de la serie --> hay que crearla en la base de datos
+                var n = {};
+                n[_this.form.nota] = 1;
+
+                ref2
+                  .set({
+                    reviews: [docRef.id],
+                    notas: n,
+                  })
+                  .then((data) => {
+                    console.log("Document written successfully: ", data);
+                    this.$router.go();
+                  })
+                  .catch((error) => {
+                    console.error("Error adding document: ", error);
+                    this.$router.go();
+                  });
+              }
+            })
+            .catch((error) => {
+              console.error("Error adding document: ", error);
+            });
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
+    },
+    obtenerReviewPorID(a) {
+      var _this = this;
+      var db = firebase.firestore();
+      var num = a;
+
+      db.collection("Reviews")
+        .doc(_this.idsReviews[num])
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("RESULTADO: ", doc.data());
+            var data = doc.data();
+
+            var ident = data.usuario;
+
+            var ref = db.collection("Usuario").doc(ident);
+
+            ref
+              .get()
+              .then((doc) => {
+                if (doc.exists) {
+                  _this.reviews[num] = data;
+                  _this.reviews[num].usuario = [
+                    doc.data().fotoPerfil,
+                    doc.data().alternativo,
+                  ];
+
+                  if (_this.reviews.length == _this.idsReviews.length) {
+                    _this.reviewsObtenidos = true;
+                  }
+                } else {
+                  console.log("no existe tia");
+                }
+              })
+              .catch((error) => {
+                console.error("Error getting document: ", error);
+              });
+          } else {
+            console.log("Document doesn't exist");
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
+    },
+    getReviews() {
+      var _this = this;
+      var idSerie = "serie" + this.getIdTemporada();
+      var db = firebase.firestore();
+      var ref = db.collection("Contenidos").doc(idSerie);
+
+      ref
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            var idsReviews = doc.data().reviews;
+            var ids = JSON.parse(JSON.stringify(idsReviews));
+
+            _this.idsReviews = ids.slice(-3);
+            _this.notas = JSON.parse(JSON.stringify(doc.data())).notas;
+
+            for (const l of Object.keys(doc.data().notas)) {
+              console.log(l);
+              console.log(_this.datos.datasets[0].data[l - 1]);
+              _this.datos.datasets[0].data[l - 1] = doc.data().notas[l];
+            }
+
+            for (const key of _this.idsReviews.keys()) {
+              _this.obtenerReviewPorID(key);
+            }
+          } else {
+            _this.reviewsObtenidos = true;
+          }
+        })
+        .catch((error) => {
+          console.log("Error getting document:", error);
+        });
+    },
+    getReviewNota(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].nota;
+      } else return "";
+    },
+    getReviewTexto(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].texto;
+      } else return "";
+    },
+    getIconoReview(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].usuario[0];
+      } else return "";
+    },
+    getIconoAlt(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].usuario[1];
+      } else return "";
+    },
+    getDatos() {
+      return this.datos;
+    },
+    getNotaMedia() {
+      var sum = 0;
+      var cont = 0;
+
+      for (var i in this.notas) {
+        console.log(i);
+        console.log(this.notas[i]);
+
+        cont += this.notas[i];
+        sum += i * this.notas[i];
+      }
+
+      this.notaMedia = (sum / cont) / 2;
+
+      return (sum / cont) / 2;
     },
   },
 };

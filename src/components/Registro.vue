@@ -167,6 +167,7 @@ export default {
               listasSeries: [],
               seriesTerminadas: [],
               alternativo: "",
+              reviews: []
             })
             .then(function () {
               console.log("Document successfully written!");

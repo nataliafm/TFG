@@ -394,8 +394,6 @@ export default {
       var _this = this;
       var db = firebase.firestore();
 
-      console.log("HOLA " + num);
-
       db.collection("Listas")
         .doc(_this.idsListas[num])
         .get()

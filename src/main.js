@@ -18,6 +18,7 @@ import CrearLista from "./components/crearLista.vue";
 import PaginaLista from "./components/paginaLista.vue";
 import Persona from "./components/Persona.vue";
 import Busqueda from "./components/Busqueda.vue";
+import BarChart from "./components/BarChart.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -42,6 +43,8 @@ Vue.use(IconsPlugin)
 Vue.use(VueRouter);
 Vue.use(VueFirestore);
 Vue.use(Vuelidate);
+
+Vue.component('bar-chart', BarChart);
 
 const router = new VueRouter({
   mode: 'history',
