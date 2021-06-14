@@ -6,13 +6,15 @@
     <div v-if="!datosSerieObtenidos">
       {{ buscarSerie() }}
     </div>
-    <div v-if="!reviewsObtenidos">
+    <div v-if="!reviewsObtenidos && datosObtenidos">
       {{ getReviews() }}
     </div>
 
-    <b-container v-if="datosObtenidos && datosSerieObtenidos && reviewsObtenidos">
+    <b-container
+      v-if="datosObtenidos && datosSerieObtenidos && reviewsObtenidos"
+    >
       <b-row>
-        <b-col cols="3" class="mt-4">
+        <b-col md="3" class="mt-4">
           <div>
             <b-img
               :src="getPoster()"
@@ -22,28 +24,32 @@
               fluid-grow
             />
           </div>
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">Estadísticas de puntuación</h5>
+          <span id="static-text" style="display: none" >{{leerNotas()}}</span>
           <bar-chart
-            :chartdata="datos"
-            :options="options"
-            :height="200"
+            :chartdata="getDatos()"
+            :options="getOptions()"
+            :height="300"
             class="mt-4"
           />
-          <div>Nota media: {{ getNotaMedia() * 2 }}</div>
+          <div>Nota media: {{ getNotaMedia() }}</div>
           <b-form-rating
             v-model="notaMedia"
+            class="border-0"
             readonly
+            stars="10"
           ></b-form-rating>
         </b-col>
-        <b-col cols="9">
+        <b-col md="9">
           <div class="descripcion">
             <h3 align="left">
               <router-link
-                style="color: #9A7ACD"
+                style="color: #9a7acd"
                 :to="{ path: '/serie', query: { id: getIdSerie() } }"
                 >{{ getTitulo() }}</router-link
               >,
               <router-link
-                style="color: #9A7ACD"
+                style="color: #9a7acd"
                 :to="{
                   path: '/temporada',
                   query: {
@@ -55,7 +61,8 @@
                 >Temporada {{ getNumTemporada() }}</router-link
               >
             </h3>
-            <h1 align="left">Episodio {{ getNumEpisodio() }}: {{ getTituloEpisodio() }}
+            <h1 align="left">
+              Episodio {{ getNumEpisodio() }}: {{ getTituloEpisodio() }}
             </h1>
             <p align="left">{{ infoEpisodio["overview"] }}</p>
           </div>
@@ -111,7 +118,11 @@
               :key="getKey()"
             ></b-pagination>
             <b-card-group id="equipo" :key="getKey()">
-              <b-card v-for="j in Array(getPerPage()).keys()" :key="j" class="border-0">
+              <b-card
+                v-for="j in Array(getPerPage()).keys()"
+                :key="j"
+                class="border-0"
+              >
                 <router-link
                   :to="{
                     path: '/persona',
@@ -151,7 +162,7 @@
                 >
                   <b-container>
                     <b-row no-gutters>
-                      <b-col md="1">
+                      <b-col sm="1">
                         <b-img
                           :src="getIconoReview(i)"
                           :alt="getIconoAlt(i)"
@@ -159,7 +170,7 @@
                           rounded="circle"
                         ></b-img>
                       </b-col>
-                      <b-col md="11">
+                      <b-col sm="11">
                         <b-card-body>
                           <b-row>
                             <b-col md="5">
@@ -167,6 +178,8 @@
                                 v-model="reviews[i].nota"
                                 readonly
                                 stars="10"
+                                class="border-0"
+                                show-value
                               ></b-form-rating>
                             </b-col>
                           </b-row>
@@ -197,6 +210,7 @@
                 id="input-nota"
                 name="nota"
                 stars="10"
+                class="border-0"
               >
               </b-form-rating>
             </b-form-group>
@@ -306,21 +320,21 @@ export default {
       },
       options: {
         scales: {
-          x: {
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
             },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          ],
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
             },
-          },
+          ],
         },
       },
     };
@@ -460,7 +474,9 @@ export default {
     },
     getActor(i, j) {
       if (this.castEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
-        var path = String(this.castEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]);
+        var path = String(
+          this.castEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]
+        );
         if (path != "null") {
           return "https://image.tmdb.org/t/p/original" + path;
         } else {
@@ -491,7 +507,9 @@ export default {
     },
     getEquipo(i, j) {
       if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
-        var path = String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]);
+        var path = String(
+          this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]
+        );
         if (path != "null") {
           return "https://image.tmdb.org/t/p/original" + path;
         } else {
@@ -522,12 +540,20 @@ export default {
     },
     existeEquipo(i, j) {
       if (this.crewEpisodio[(i - 1) * this.getPerPage() + j] != undefined) {
-        console.log(String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]));
         console.log(
-          String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]) == "null"
+          String(
+            this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]
+          )
+        );
+        console.log(
+          String(
+            this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]
+          ) == "null"
         );
         return (
-          String(this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]) != "null"
+          String(
+            this.crewEpisodio[(i - 1) * this.getPerPage() + j]["profile_path"]
+          ) != "null"
         );
       } else return false;
     },
@@ -560,7 +586,6 @@ export default {
       return this.perPage;
     },
     submit() {
-
       var _this = this;
       var db = firebase.firestore();
       var ref = db.collection("Reviews");
@@ -579,7 +604,7 @@ export default {
           var ident = firebase.auth().currentUser.uid;
           var ref1 = db.collection("Usuario").doc(ident);
 */
-          var idSerie = "episodio" + this.getIdSerie();
+          var idSerie = "episodio" + this.getIdEpisodio();
           var ref2 = db.collection("Contenidos").doc(idSerie);
           /*
           ref1
@@ -695,7 +720,7 @@ export default {
     },
     getReviews() {
       var _this = this;
-      var idSerie = "episodio" + this.getIdSerie();
+      var idSerie = "episodio" + this.getIdEpisodio();
       var db = firebase.firestore();
       var ref = db.collection("Contenidos").doc(idSerie);
 
@@ -761,15 +786,32 @@ export default {
         sum += i * this.notas[i];
       }
 
-      if (sum == 0){
+      if (sum == 0) {
         this.notaMedia = 0;
         return 0;
-      }
-      else{
-        this.notaMedia = (sum / cont) / 2;
-        return (sum / cont) / 2;
+      } else {
+        this.notaMedia = sum / cont;
+        return sum / cont;
       }
     },
+    getOptions() {
+      return this.options;
+    },
+    getIdEpisodio() {
+      return this.infoEpisodio.id;
+    },
+    leerNotas(){
+      var texto = "";
+
+      for (var i in this.notas){
+        if (this.notas[i] > 1)
+          texto += (this.notas[i] + " personas le han dado una puntuación de " + i + ". ");
+        else 
+          texto += (this.notas[i] + " persona le ha dado una puntuación de " + i + ". ");
+      }
+
+      return texto;
+    }
   },
 };
 </script>

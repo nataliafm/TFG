@@ -26,7 +26,7 @@
       "
     >
       <b-row>
-        <b-col cols="2" class="mt-4">
+        <b-col md="2" class="mt-4">
           <div v-if="terminaCargar1">
             <b-img
               :src="getPoster()"
@@ -42,7 +42,7 @@
           </div>
         </b-col>
 
-        <b-col cols="7" class="mt-4">
+        <b-col md="7" class="mt-4">
           <div class="descripcion">
             <h1 align="left">{{ resultado["name"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
@@ -89,7 +89,7 @@
           </div>
         </b-col>
 
-        <b-col cols="3" class="mt-4">
+        <b-col md="3" class="mt-4">
           <b-button-group vertical class="botones" v-if="serieComprobada">
             <b-dropdown
               class="boton"
@@ -141,15 +141,18 @@
               >Añadir a series pendientes</b-button
             >
           </b-button-group>
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">Estadísticas de puntuación</h5>
+          <span id="static-text" style="display: none" >{{leerNotas()}}</span>
           <bar-chart
             :chartdata="datos"
             :options="options"
-            :height="200"
-            class="mt-4"
+            :height="300"
           />
-          <div>Nota media: {{ getNotaMedia() * 2}}</div>
+          <div>Nota media: {{ getNotaMedia()}}</div>
           <b-form-rating
             v-model="notaMedia"
+            class="border-0"
+            stars="10"
             readonly
           ></b-form-rating>
         </b-col>
@@ -218,7 +221,7 @@
                 >
                   <b-container>
                     <b-row no-gutters>
-                      <b-col md="1">
+                      <b-col sm="1">
                         <b-img
                           :src="getIconoReview(i)"
                           :alt="getIconoAlt(i)"
@@ -226,7 +229,7 @@
                           rounded="circle"
                         ></b-img>
                       </b-col>
-                      <b-col md="11">
+                      <b-col sm="11">
                         <b-card-body>
                           <b-row>
                             <b-col md="5">
@@ -234,6 +237,8 @@
                                 v-model="reviews[i].nota"
                                 readonly
                                 stars="10"
+                                class="border-0"
+                                show-value
                               ></b-form-rating>
                             </b-col>
                           </b-row>
@@ -264,6 +269,7 @@
                 id="input-nota"
                 name="nota"
                 stars="10"
+                class="border-0"
               >
               </b-form-rating>
             </b-form-group>
@@ -379,21 +385,21 @@ export default {
       },
       options: {
         scales: {
-          x: {
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
             },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          ],
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
             },
-          },
+          ],
         },
       },
     };
@@ -898,6 +904,8 @@ export default {
                     doc.data().alternativo,
                   ];
 
+                  console.log("HOLAAAA ", _this.reviews );
+
                   if (_this.reviews.length == _this.idsReviews.length) {
                     _this.reviewsObtenidos = true;
                   }
@@ -951,7 +959,7 @@ export default {
     },
     getReviewNota(i) {
       if (this.reviews[i] != undefined) {
-        return this.reviews[i].nota;
+        return this.reviews[i].nota / 2;
       } else return "";
     },
     getReviewTexto(i) {
@@ -984,9 +992,26 @@ export default {
         sum += i * this.notas[i];
       }
 
-      this.notaMedia = (sum / cont) / 2;
+      if (sum == 0){
+        this.notaMedia = 0;
+        return 0;
+      }
+      else{
+        this.notaMedia = (sum / cont);
+        return (sum / cont);
+      }
+    },
+    leerNotas(){
+      var texto = "";
 
-      return (sum / cont) / 2;
+      for (var i in this.notas){
+        if (this.notas[i] > 1)
+          texto += (this.notas[i] + " personas le han dado una puntuación de " + i + ". ");
+        else 
+          texto += (this.notas[i] + " persona le ha dado una puntuación de " + i + ". ");
+      }
+
+      return texto;
     },
   },
 };

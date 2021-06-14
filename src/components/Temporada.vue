@@ -3,13 +3,13 @@
     <div v-if="!datosObtenidos">
       {{ buscarTemporada() }}
     </div>
-    <div v-if="!reviewsObtenidos">
+    <div v-if="!reviewsObtenidos && datosObtenidos">
       {{ getReviews() }}
     </div>
 
     <b-container v-if="datosObtenidos && reviewsObtenidos">
       <b-row>
-        <b-col cols="3" class="mt-4">
+        <b-col md="3" class="mt-4">
           <div>
             <b-img
               :src="getPoster()"
@@ -19,22 +19,32 @@
               fluid-grow
             />
           </div>
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">Estadísticas de puntuación</h5>
+          <span id="static-text" style="display: none" >{{leerNotas()}}</span>
           <bar-chart
             :chartdata="datos"
             :options="options"
-            :height="200"
+            :height="300"
             class="mt-4"
           />
-          <div>Nota media: {{ getNotaMedia() * 2 }}</div>
+          <div>Nota media: {{ getNotaMedia() }}</div>
           <b-form-rating
             v-model="notaMedia"
             readonly
+            class="border-0"
+            stars="10"
           ></b-form-rating>
         </b-col>
-        <b-col cols="9">
+        <b-col md="9">
           <div class="descripcion">
-            <h3 align="left"><router-link style="color: #9A7ACD" :to="{ path: '/serie', query: { id: getIdSerie() } }">{{ getTituloSerie() }}</router-link>:</h3>
-            
+            <h3 align="left">
+              <router-link
+                style="color: #9a7acd"
+                :to="{ path: '/serie', query: { id: getIdSerie() } }"
+                >{{ getTituloSerie() }}</router-link
+              >:
+            </h3>
+
             <h1 align="left">Temporada {{ resultado["season_number"] }}</h1>
             <p align="left">{{ resultado["overview"] }}</p>
           </div>
@@ -101,7 +111,7 @@
                 >
                   <b-container>
                     <b-row no-gutters>
-                      <b-col md="1">
+                      <b-col sm="1">
                         <b-img
                           :src="getIconoReview(i)"
                           :alt="getIconoAlt(i)"
@@ -109,7 +119,7 @@
                           rounded="circle"
                         ></b-img>
                       </b-col>
-                      <b-col md="11">
+                      <b-col sm="11">
                         <b-card-body>
                           <b-row>
                             <b-col md="5">
@@ -117,6 +127,8 @@
                                 v-model="reviews[i].nota"
                                 readonly
                                 stars="10"
+                                class="border-0"
+                                show-value
                               ></b-form-rating>
                             </b-col>
                           </b-row>
@@ -147,6 +159,7 @@
                 id="input-nota"
                 name="nota"
                 stars="10"
+                class="border-0"
               >
               </b-form-rating>
             </b-form-group>
@@ -240,21 +253,21 @@ export default {
       },
       options: {
         scales: {
-          x: {
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
             },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              type: "linear",
-              min: 0,
-              stepSize: 1,
+          ],
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
             },
-          },
+          ],
         },
       },
     };
@@ -402,7 +415,6 @@ export default {
       else return "";
     },
     submit() {
-
       var _this = this;
       var db = firebase.firestore();
       var ref = db.collection("Reviews");
@@ -421,7 +433,7 @@ export default {
           var ident = firebase.auth().currentUser.uid;
           var ref1 = db.collection("Usuario").doc(ident);
 */
-          var idSerie = "temporada" + this.getIdSerie();
+          var idSerie = "temporada" + this.getIdTemp();
           var ref2 = db.collection("Contenidos").doc(idSerie);
           /*
           ref1
@@ -511,17 +523,17 @@ export default {
               .get()
               .then((doc) => {
                 if (doc.exists) {
+                  var a = [doc.data().fotoPerfil, doc.data().alternativo];
+
+                  data.usuario = a;
+
                   _this.reviews[num] = data;
-                  _this.reviews[num].usuario = [
-                    doc.data().fotoPerfil,
-                    doc.data().alternativo,
-                  ];
 
                   if (_this.reviews.length == _this.idsReviews.length) {
                     _this.reviewsObtenidos = true;
                   }
                 } else {
-                  console.log("no existe tia");
+                  console.log("no existe el documento");
                 }
               })
               .catch((error) => {
@@ -537,7 +549,7 @@ export default {
     },
     getReviews() {
       var _this = this;
-      var idSerie = "temporada" + this.getIdSerie();
+      var idSerie = "temporada" + this.getIdTemp();
       var db = firebase.firestore();
       var ref = db.collection("Contenidos").doc(idSerie);
 
@@ -603,10 +615,29 @@ export default {
         sum += i * this.notas[i];
       }
 
-      this.notaMedia = (sum / cont) / 2;
-
-      return (sum / cont) / 2;
+      if (sum == 0) {
+        this.notaMedia = 0;
+        return 0;
+      } else {
+        this.notaMedia = sum / cont;
+        return sum / cont;
+      }
     },
+    getIdTemp() {
+      return this.resultado.id;
+    },
+    leerNotas(){
+      var texto = "";
+
+      for (var i in this.notas){
+        if (this.notas[i] > 1)
+          texto += (this.notas[i] + " personas le han dado una puntuación de " + i + ". ");
+        else 
+          texto += (this.notas[i] + " persona le ha dado una puntuación de " + i + ". ");
+      }
+
+      return texto;
+    }
   },
 };
 </script>

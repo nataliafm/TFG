@@ -8,20 +8,32 @@
         <b-navbar-nav class="ml-auto">
           <b-nav-item to="/registro" v-if="!userstate">Registrarse</b-nav-item>
           <b-nav-item to="/login" v-if="!userstate">Iniciar sesión</b-nav-item>
-          <b-nav-form v-if="userstate" class="mr-4">
+          
             <b-form-input
-              size="sm"
               class="mr-sm-2"
-              placeholder="Search"
+              placeholder="Búsqueda de una serie o persona"
               v-model="form.busqueda"
+              v-if="userstate"
             ></b-form-input>
-            <b-button size="sm" class="my-2 my-sm-0" type="submit">
+            <div class="my-sm-0 mr-4 bg-dark rounded" v-if="userstate">
               <b-nav-item-dropdown text="Buscar" right>
-                <b-dropdown-item :to="{path:'/busqueda', query: { type: 'serie', query: form.busqueda }}">Serie</b-dropdown-item>
-                <b-dropdown-item :to="{path:'/busqueda', query: { type: 'persona', query: form.busqueda }}">Persona</b-dropdown-item>
+                <b-dropdown-item
+                  :to="{
+                    path: '/busqueda',
+                    query: { type: 'serie', query: form.busqueda },
+                  }"
+                  >Serie</b-dropdown-item
+                >
+                <b-dropdown-item
+                  :to="{
+                    path: '/busqueda',
+                    query: { type: 'persona', query: form.busqueda },
+                  }"
+                  >Persona</b-dropdown-item
+                >
               </b-nav-item-dropdown>
-            </b-button>
-          </b-nav-form>
+            </div>
+          
           <b-nav-item href="#" v-if="userstate">Listas</b-nav-item>
           <b-nav-item href="#" v-if="userstate">Series</b-nav-item>
           <b-nav-item-dropdown text="Perfil" v-if="userstate" right>
@@ -45,7 +57,7 @@ export default {
   data() {
     return {
       form: {
-        busqueda: ""
+        busqueda: "",
       },
       userstate: false,
     };
@@ -75,6 +87,13 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    submit() {
+      console.log("HOLAAAAAAA");
+      this.$router.go({
+        path: "/busqueda",
+        query: { type: "serie", query: this.form.busqueda },
+      });
     },
   },
 };
