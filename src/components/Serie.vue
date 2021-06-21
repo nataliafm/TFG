@@ -15,6 +15,9 @@
     <div v-if="!reviewsObtenidos">
       {{ getReviews() }}
     </div>
+    <div v-if="!similaresObtenidas">
+      {{ getSimilares() }}
+    </div>
 
     <b-container
       v-if="
@@ -22,7 +25,8 @@
         obtenido2 &&
         terminaCargar1 &&
         terminaCargar2 &&
-        reviewsObtenidos
+        reviewsObtenidos &&
+        similaresObtenidas
       "
     >
       <b-row>
@@ -141,14 +145,12 @@
               >Añadir a series pendientes</b-button
             >
           </b-button-group>
-          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">Estadísticas de puntuación</h5>
-          <span id="static-text" style="display: none" >{{leerNotas()}}</span>
-          <bar-chart
-            :chartdata="datos"
-            :options="options"
-            :height="300"
-          />
-          <div>Nota media: {{ getNotaMedia()}}</div>
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">
+            Estadísticas de puntuación
+          </h5>
+          <span id="static-text" style="display: none">{{ leerNotas() }}</span>
+          <bar-chart :chartdata="datos" :options="options" :height="300" />
+          <div>Nota media: {{ getNotaMedia() }}</div>
           <b-form-rating
             v-model="notaMedia"
             class="border-0"
@@ -295,6 +297,30 @@
           </b-form>
         </b-col>
       </b-row>
+      <b-row>
+        <h3 align="left" class="mb-4">Series similares</h3>
+        <b-card-group id="temporadas" :key="getKey()">
+          <b-card v-for="i in Array(6).keys()" :key="i" class="border-0">
+            <router-link
+              :to="{
+                path: '/serie',
+                query: {
+                  id: getIdSimilar(i),
+                },
+              }"
+            >
+              <b-card-img
+                :src="getPosterSimilar(i)"
+                :alt="getNombreSimilar(i)"
+                class="posterTemporada"
+              ></b-card-img>
+            </router-link>
+            <b-card-text class="nombreTemporada">{{
+              getNombreSimilar(i)
+            }}</b-card-text>
+          </b-card>
+        </b-card-group>
+      </b-row>
     </b-container>
   </div>
 </template>
@@ -340,6 +366,8 @@ export default {
       serieEstaPendiente: false,
       renderProviders: true,
       llave: true,
+      seriesSimilares: [],
+      similaresObtenidas: false,
       form: {
         nota: "",
         texto: "",
@@ -409,6 +437,23 @@ export default {
   },
   destroyed() {
     window.removeEventListener("resize", this.myEventHandler);
+  },
+  watch: {
+    "$route.query.id": {
+      handler: function (id) {
+        console.log("holaaaaaaaaa ", id);
+        this.obtenido1 = false;
+        this.obtenido2 = false;
+        this.terminaCargar1 = false;
+        this.terminaCargar2 = false;
+        this.capitulosObtenidos = false;
+        this.serieComprobada = false;
+        this.reviewsObtenidos = false;
+        this.similaresObtenidas = false;
+      },
+      deep: true,
+      immediate: true,
+    },
   },
   methods: {
     getNumTemporadas() {
@@ -904,7 +949,7 @@ export default {
                     doc.data().alternativo,
                   ];
 
-                  console.log("HOLAAAA ", _this.reviews );
+                  console.log("HOLAAAA ", _this.reviews);
 
                   if (_this.reviews.length == _this.idsReviews.length) {
                     _this.reviewsObtenidos = true;
@@ -992,26 +1037,63 @@ export default {
         sum += i * this.notas[i];
       }
 
-      if (sum == 0){
+      if (sum == 0) {
         this.notaMedia = 0;
         return 0;
-      }
-      else{
-        this.notaMedia = (sum / cont);
-        return (sum / cont);
+      } else {
+        this.notaMedia = sum / cont;
+        return sum / cont;
       }
     },
-    leerNotas(){
+    leerNotas() {
       var texto = "";
 
-      for (var i in this.notas){
+      for (var i in this.notas) {
         if (this.notas[i] > 1)
-          texto += (this.notas[i] + " personas le han dado una puntuación de " + i + ". ");
-        else 
-          texto += (this.notas[i] + " persona le ha dado una puntuación de " + i + ". ");
+          texto +=
+            this.notas[i] +
+            " personas le han dado una puntuación de " +
+            i +
+            ". ";
+        else
+          texto +=
+            this.notas[i] + " persona le ha dado una puntuación de " + i + ". ";
       }
 
       return texto;
+    },
+    existSim(data) {
+      console.log("Success callback: " + data);
+      var datos = JSON.parse(data);
+
+      this.seriesSimilares = datos;
+      this.similaresObtenidas = true;
+    },
+    errorSim(data) {
+      console.log("Error: ", data);
+    },
+    getSimilares() {
+      themoviedb.tv.getSimilar(
+        { id: this.getIdTemporada() },
+        this.existSim,
+        this.errorSim
+      );
+    },
+    getNombreSimilar(i) {
+      if (this.seriesSimilares["results"][i] != undefined) {
+        return this.seriesSimilares["results"][i]["name"];
+      } else return "";
+    },
+    getIdSimilar(i) {
+      if (this.seriesSimilares["results"][i] != undefined) {
+        return this.seriesSimilares["results"][i]["id"];
+      } else return "";
+    },
+    getPosterSimilar(i) {
+      var path = this.seriesSimilares["results"][i];
+      if (path != undefined && path["poster_path"] != null) {
+        return "https://image.tmdb.org/t/p/original" + String(this.seriesSimilares["results"][i]["poster_path"]);
+      } else return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
     },
   },
 };
