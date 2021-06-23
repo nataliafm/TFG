@@ -37,7 +37,10 @@
           <b-nav-item href="#" v-if="userstate">Listas</b-nav-item>
           <b-nav-item href="#" v-if="userstate">Series</b-nav-item>
           <b-nav-item-dropdown text="Perfil" v-if="userstate" right>
-            <b-dropdown-item to="/perfil">Perfil</b-dropdown-item>
+            <b-dropdown-item :to="{
+                    path: '/perfil',
+                    query: { id: getIdUsuario() },
+                  }">Perfil</b-dropdown-item>
             <b-dropdown-item v-on:click="logout()"
               >Cerrar sesión</b-dropdown-item
             >
@@ -89,12 +92,14 @@ export default {
         });
     },
     submit() {
-      console.log("HOLAAAAAAA");
       this.$router.go({
         path: "/busqueda",
         query: { type: "serie", query: this.form.busqueda },
       });
     },
+    getIdUsuario() {
+      return firebase.auth().currentUser.uid;
+    }
   },
 };
 </script>

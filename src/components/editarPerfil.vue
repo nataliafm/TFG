@@ -679,7 +679,8 @@ export default {
           .updatePassword(_this.form.passNueva)
           .then(function () {
             console.log("Document successfully written!");
-            _this.$router.push({ path: "/perfil" });
+            _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
+            
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);
@@ -707,7 +708,7 @@ export default {
               )
               .then(function () {
                 console.log("documento escrito");
-                _this.$router.push({ path: "/perfil" });
+                _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
               });
           });
         });
@@ -816,7 +817,7 @@ export default {
                   }
                   */
 
-                  _this.$router.push({ path: "/perfil" });
+                  _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
                 })
                 .catch(function (error) {
                   console.log("Error writing document: ", error);
@@ -828,7 +829,7 @@ export default {
                   }
                 });
             } else {
-              _this.$router.push({ path: "/perfil" });
+              _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
             }
           })
           .catch(function (error) {
@@ -859,7 +860,7 @@ export default {
               _this.$router.push({ path: "/perfil" });
             }
 */
-            _this.$router.push({ path: "/perfil" });
+            _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);

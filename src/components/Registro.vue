@@ -167,7 +167,8 @@ export default {
               listasSeries: [],
               seriesTerminadas: [],
               alternativo: "",
-              reviews: []
+              reviews: [],
+              amigos: [],
             })
             .then(function () {
               console.log("Document successfully written!");

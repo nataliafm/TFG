@@ -5,7 +5,8 @@
         !datosObtenidos ||
         !datosObtenidosFav ||
         !datosObtenidosListas ||
-        !datosObtenidosPend
+        !datosObtenidosPend ||
+        !datosObtenidosAmigos
       "
     >
       {{ obtenerDatosUsuario() }}
@@ -15,12 +16,18 @@
         datosObtenidos &&
         datosObtenidosFav &&
         datosObtenidosListas &&
-        datosObtenidosPend
+        datosObtenidosPend &&
+        datosObtenidosAmigos
       "
     >
       <b-row cols="3" align-v="stretch">
         <b-col cols="2" class="mt-4">
-          <b-img rounded="circle" fluid :src="getURLperfil()" :alt="datosUsuario.alternativo"></b-img>
+          <b-img
+            rounded="circle"
+            fluid
+            :src="getURLperfil()"
+            :alt="datosUsuario.alternativo"
+          ></b-img>
         </b-col>
         <b-col cols="8" class="mt-4">
           <h1 class="username">{{ getUsername() }}</h1>
@@ -28,7 +35,12 @@
           <p class="username">{{ getDescripcion() }}</p>
         </b-col>
         <b-col cols="2" class="mt-4">
-          <b-button href="/editarPerfil"><b-icon-pencil></b-icon-pencil> Editar perfil</b-button>
+          <b-button v-if="perfilPropio" href="/editarPerfil"
+            ><b-icon-pencil></b-icon-pencil> Editar perfil</b-button
+          >
+          <b-button v-else-if="!esAmigo" v-on:click="aniadirAmigo()">
+            Añadir amigo</b-button
+          >
         </b-col>
       </b-row>
       <b-row>
@@ -52,14 +64,18 @@
               deck
             >
               <b-button
-                v-if="getNombreSerie(currentPageEmpezadas, j) != ''"
+                v-if="
+                  getNombreSerie(currentPageEmpezadas, j) != '' && perfilPropio
+                "
                 class="botonQuitar mb-2"
                 size="sm"
                 v-on:click="siguienteCapitulo(currentPageEmpezadas, j)"
                 ><b-icon-check2></b-icon-check2> Visto</b-button
               >
               <b-button
-                v-if="getNombreSerie(currentPageEmpezadas, j) != ''"
+                v-if="
+                  getNombreSerie(currentPageEmpezadas, j) != '' && perfilPropio
+                "
                 class="botonQuitar mb-2"
                 size="sm"
                 v-on:click="eliminarEmpezadas(currentPageEmpezadas, j)"
@@ -88,7 +104,6 @@
               <b-card-text class="rol">
                 {{ getTemporada(currentPageEmpezadas, j) }}
               </b-card-text>
-              
             </b-card>
             <div v-if="seguir1">
               {{ getNumElementosEmpezadas() }}
@@ -131,7 +146,9 @@
           </b-card-group>
 
           <div align="left" class="mt-4">
-            <b-button href="/crearLista"><b-icon-plus></b-icon-plus> Crear una nueva lista</b-button>
+            <b-button href="/crearLista" v-if="perfilPropio"
+              ><b-icon-plus></b-icon-plus> Crear una nueva lista</b-button
+            >
           </div>
         </b-col>
       </b-row>
@@ -174,7 +191,24 @@
             </div>
           </b-card-group>
         </b-col>
-        <b-col cols="2"></b-col>
+        <b-col cols="4" v-if="renderAmigos">
+          <h3 align="left" class="mt-4">Amigos</h3>
+
+          <b-avatar-group
+            overlap="0"
+            v-for="i in Array(getLongAmigos()).keys()"
+            :key="i"
+          >
+            <router-link
+              :to="{
+                path: '/perfil',
+                query: { id: getIdAmigo(i) },
+              }"
+            >
+              <b-avatar :src="getAmigoFoto(i)"></b-avatar>
+            </router-link>
+          </b-avatar-group>
+        </b-col>
       </b-row>
       <b-row>
         <b-col cols="8">
@@ -265,6 +299,12 @@ export default {
       perPageLista: 3,
       serieMarcadaVista: "",
       serieMarcadaVistaTemp: "",
+      perfilPropio: false,
+      esAmigo: false,
+      idsAmigos: [],
+      amigos: [],
+      datosObtenidosAmigos: false,
+      renderAmigos: true,
     };
   },
   created() {
@@ -272,6 +312,30 @@ export default {
   },
   destroyed() {
     window.removeEventListener("resize", this.myEventHandler);
+  },
+  watch: {
+    "$route.query.id": {
+      handler: function (id) {
+        console.log(id);
+        this.datosObtenidos = false;
+        this.datosObtenidosFav = false;
+        this.datosObtenidosListas = false;
+        this.datosObtenidosPend = false;
+        this.datosObtenidosAmigos = false;
+        this.renderFav = true;
+        this.renderEmp = true;
+        this.renderListas = true;
+        this.renderPend = true;
+        this.renderAmigos = true;
+        this.seriesE = [];
+        this.seriesP = [];
+        this.seriesF = [];
+        this.perfilPropio = false;
+        this.esAmigo = false;
+      },
+      deep: true,
+      immediate: true,
+    },
   },
   methods: {
     getNumEmpezadas() {
@@ -413,18 +477,78 @@ export default {
           console.log("Error getting document:", error);
         });
     },
+    obtenerAmigoPorID(num) {
+      var _this = this;
+      var db = firebase.firestore();
+
+      db.collection("Usuario")
+        .doc(_this.idsAmigos[num])
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            console.log("RESULTADO: ", doc.data());
+            _this.amigos[num] = doc.data().fotoPerfil;
+
+            if (_this.amigos.length == _this.idsAmigos.length) {
+              _this.datosObtenidosAmigos = true;
+            }
+          } else {
+            console.log("Document doesn't exist");
+          }
+        });
+    },
     obtenerDatosUsuario() {
       var _this = this;
-      var ident = firebase.auth().currentUser.uid;
+      //var ident = firebase.auth().currentUser.uid;
+      var ident = this.getIdUsuario();
       var db = firebase.firestore();
       var ref = db.collection("Usuario").doc(ident);
+
+      if (ident == firebase.auth().currentUser.uid) {
+        this.perfilPropio = true;
+      } else {
+        var idPropio = firebase.auth().currentUser.uid;
+        var refPropio = db.collection("Usuario").doc(idPropio);
+
+        refPropio
+          .get()
+          .then((doc) => {
+            if (doc.exists) {
+              console.log("Document data:", doc.data());
+              var amigos = doc.data().amigos;
+
+              if (amigos.includes(ident)) {
+                this.esAmigo = true;
+              }
+            } else {
+              console.log("El documento no existe");
+            }
+          })
+          .catch((error) => {
+            console.log("Error getting document:", error);
+          });
+      }
 
       ref
         .get()
         .then((doc) => {
           if (doc.exists) {
-            console.log("Document data:", doc.data());
+            console.log("Document data !!!!! :", doc.data());
             _this.datosUsuario = doc.data();
+
+            var amigos = JSON.parse(JSON.stringify(_this.datosUsuario.amigos));
+
+            if (amigos.length > 0) {
+              _this.idsAmigos = amigos;
+
+              for (const key of _this.idsAmigos.keys()) {
+                _this.obtenerAmigoPorID(key);
+              }
+            } else {
+              console.log("entra amigos");
+              _this.renderAmigos = false;
+              _this.datosObtenidosAmigos = true;
+            }
 
             var listas = JSON.parse(
               JSON.stringify(_this.datosUsuario.listasSeries)
@@ -437,6 +561,7 @@ export default {
                 _this.obtenerListaPorID(key);
               }
             } else {
+              console.log("entra listas");
               _this.renderListas = false;
               _this.datosObtenidosListas = true;
             }
@@ -445,6 +570,7 @@ export default {
               JSON.stringify(_this.datosUsuario.seriesEmpezadas)
             );
             if (seriesEmp.length > 0) {
+              /*
               for (
                 var m = 0, k = 1;
                 m < _this.datosUsuario.seriesEmpezadas.length;
@@ -459,13 +585,14 @@ export default {
               if (_this.contadorEmpezadas < 6)
                 _this.numElementosEmpezadas = Array.from(Array(6).keys());
               else _this.numElementosEmpezadas = Array.from(Array(6).keys());
-
+              */
               var idSeries = _this.datosUsuario.seriesEmpezadas.keys();
 
               for (const key of idSeries) {
                 _this.obtenerSeriePorID(key);
               }
             } else {
+              console.log("entra empezados");
               _this.renderEmp = false;
               _this.datosObtenidos = true;
             }
@@ -495,6 +622,7 @@ export default {
                 _this.obtenerSeriePorIDFav(key);
               }
             } else {
+              console.log("entra favoritos");
               _this.renderFav = false;
               _this.datosObtenidosFav = true;
             }
@@ -516,6 +644,7 @@ export default {
                 _this.obtenerSeriePorIDPend(key);
               }
             } else {
+              console.log("entra pendientes");
               _this.renderPend = false;
               _this.datosObtenidosPend = true;
             }
@@ -730,7 +859,8 @@ export default {
           };
 
           var db = firebase.firestore();
-          var ident = firebase.auth().currentUser.uid;
+          //var ident = firebase.auth().currentUser.uid;
+          var ident = this.getIdUsuario();
           var _this = this;
 
           db.collection("Usuario")
@@ -788,7 +918,8 @@ export default {
           };
 
           var db = firebase.firestore();
-          var ident = firebase.auth().currentUser.uid;
+          //var ident = firebase.auth().currentUser.uid;
+          var ident = this.getIdUsuario();
           var _this = this;
 
           db.collection("Usuario")
@@ -825,7 +956,8 @@ export default {
       var datos = JSON.parse(data);
       var enProduccion = datos["in_production"];
       var db = firebase.firestore();
-      var ident = firebase.auth().currentUser.uid;
+      //var ident = firebase.auth().currentUser.uid;
+      var ident = this.getIdUsuario();
       var _this = this;
 
       var serie = {};
@@ -895,7 +1027,8 @@ export default {
           empezadasUpdated.splice(i, 1);
 
           var db = firebase.firestore();
-          var ident = firebase.auth().currentUser.uid;
+          //var ident = firebase.auth().currentUser.uid;
+          var ident = this.getIdUsuario();
           var _this = this;
 
           db.collection("Usuario")
@@ -915,6 +1048,40 @@ export default {
             });
         }
       }
+    },
+    getIdUsuario() {
+      //var _this = this;
+      console.log("HOLAAAAAAAAAAAAAAAAAA DTRNJRTH ", this.$route.query.id);
+      return this.$route.query.id;
+    },
+    aniadirAmigo() {
+      var _this = this;
+      var ident = firebase.auth().currentUser.uid;
+      var amigo = this.getIdUsuario();
+      var db = firebase.firestore();
+      var ref = db.collection("Usuario").doc(ident);
+
+      ref
+        .update({
+          amigos: firebase.firestore.FieldValue.arrayUnion(amigo),
+        })
+        .then(function () {
+          console.log("Operación realizada correctamente");
+          _this.$router.go(0);
+        })
+        .catch(function (error) {
+          console.log("Error writing document: ", error);
+        });
+    },
+    getAmigoFoto(i) {
+      if (this.amigos[i] != undefined) return this.amigos[i];
+      else return "";
+    },
+    getLongAmigos() {
+      return this.amigos.length;
+    },
+    getIdAmigo(i) {
+      return this.idsAmigos[i];
     },
   },
 };

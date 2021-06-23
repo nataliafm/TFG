@@ -224,12 +224,21 @@
                   <b-container>
                     <b-row no-gutters>
                       <b-col sm="1">
-                        <b-img
-                          :src="getIconoReview(i)"
-                          :alt="getIconoAlt(i)"
-                          fluid
-                          rounded="circle"
-                        ></b-img>
+                        <router-link
+                          :to="{
+                            path: '/perfil',
+                            query: {
+                              id: getIdUsuario(i)
+                            },
+                          }"
+                        >
+                          <b-img
+                            :src="getIconoReview(i)"
+                            :alt="getIconoAlt(i)"
+                            fluid
+                            rounded="circle"
+                          ></b-img>
+                        </router-link>
                       </b-col>
                       <b-col sm="11">
                         <b-card-body>
@@ -441,7 +450,7 @@ export default {
   watch: {
     "$route.query.id": {
       handler: function (id) {
-        console.log("holaaaaaaaaa ", id);
+        console.log(id);
         this.obtenido1 = false;
         this.obtenido2 = false;
         this.terminaCargar1 = false;
@@ -947,6 +956,7 @@ export default {
                   _this.reviews[num].usuario = [
                     doc.data().fotoPerfil,
                     doc.data().alternativo,
+                    data.usuario,
                   ];
 
                   console.log("HOLAAAA ", _this.reviews);
@@ -1022,6 +1032,11 @@ export default {
         return this.reviews[i].usuario[1];
       } else return "";
     },
+    getIdUsuario(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].usuario[2];
+      } else return "";
+    },
     getDatos() {
       return this.datos;
     },
@@ -1092,8 +1107,12 @@ export default {
     getPosterSimilar(i) {
       var path = this.seriesSimilares["results"][i];
       if (path != undefined && path["poster_path"] != null) {
-        return "https://image.tmdb.org/t/p/original" + String(this.seriesSimilares["results"][i]["poster_path"]);
-      } else return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+        return (
+          "https://image.tmdb.org/t/p/original" +
+          String(this.seriesSimilares["results"][i]["poster_path"])
+        );
+      } else
+        return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
     },
   },
 };

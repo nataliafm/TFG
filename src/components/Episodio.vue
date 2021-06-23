@@ -24,8 +24,10 @@
               fluid-grow
             />
           </div>
-          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">Estadísticas de puntuación</h5>
-          <span id="static-text" style="display: none" >{{leerNotas()}}</span>
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">
+            Estadísticas de puntuación
+          </h5>
+          <span id="static-text" style="display: none">{{ leerNotas() }}</span>
           <bar-chart
             :chartdata="getDatos()"
             :options="getOptions()"
@@ -163,12 +165,21 @@
                   <b-container>
                     <b-row no-gutters>
                       <b-col sm="1">
+                        <router-link
+                          :to="{
+                            path: '/perfil',
+                            query: {
+                              id: getIdPersona(i)
+                            },
+                          }"
+                        >
                         <b-img
                           :src="getIconoReview(i)"
                           :alt="getIconoAlt(i)"
                           fluid
                           rounded="circle"
                         ></b-img>
+                        </router-link>
                       </b-col>
                       <b-col sm="11">
                         <b-card-body>
@@ -698,6 +709,7 @@ export default {
                   _this.reviews[num].usuario = [
                     doc.data().fotoPerfil,
                     doc.data().alternativo,
+                    data.usuario,
                   ];
 
                   if (_this.reviews.length == _this.idsReviews.length) {
@@ -771,6 +783,11 @@ export default {
         return this.reviews[i].usuario[1];
       } else return "";
     },
+    getIdPersona(i) {
+      if (this.reviews[i] != undefined) {
+        return this.reviews[i].usuario[2];
+      } else return "";
+    },
     getDatos() {
       return this.datos;
     },
@@ -800,18 +817,23 @@ export default {
     getIdEpisodio() {
       return this.infoEpisodio.id;
     },
-    leerNotas(){
+    leerNotas() {
       var texto = "";
 
-      for (var i in this.notas){
+      for (var i in this.notas) {
         if (this.notas[i] > 1)
-          texto += (this.notas[i] + " personas le han dado una puntuación de " + i + ". ");
-        else 
-          texto += (this.notas[i] + " persona le ha dado una puntuación de " + i + ". ");
+          texto +=
+            this.notas[i] +
+            " personas le han dado una puntuación de " +
+            i +
+            ". ";
+        else
+          texto +=
+            this.notas[i] + " persona le ha dado una puntuación de " + i + ". ";
       }
 
       return texto;
-    }
+    },
   },
 };
 </script>
