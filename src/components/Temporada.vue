@@ -431,21 +431,124 @@ export default {
       var ref = db.collection("Reviews");
       var ident = firebase.auth().currentUser.uid;
 
+      var contenido = {tipo: "temporada", id: [this.getIdSerie(), this.getNumeroTemporada()]};
+
       ref
         .add({
           // guarda reseña en documento  de Reviews
           nota: _this.form.nota,
           texto: _this.form.texto,
           usuario: ident,
+          idContenido: contenido
         })
         .then((docRef) => {
           console.log("Document written with ID: ", docRef.id); //id generado
-          /*
+          
           var ident = firebase.auth().currentUser.uid;
           var ref1 = db.collection("Usuario").doc(ident);
-*/
+
           var idSerie = "temporada" + this.getIdTemp();
           var ref2 = db.collection("Contenidos").doc(idSerie);
+
+          ref1
+            .get()
+            .then((doc) => {
+              if (doc.exists) {
+                var c = doc.data().notas;
+
+                console.log(c);
+
+                if (c == []){
+                  var m = {};
+                  m[_this.form.nota] = 1;
+                  c = m;
+                }
+
+                if (isNaN(c[_this.form.nota])) c[_this.form.nota] = 1;
+                else c[_this.form.nota] += 1;
+
+                var b = doc.data().reviews;
+                if (b == []) b = [docRef.id];
+                else b.push(docRef.id);
+
+                console.log(c);
+                console.log(b);
+
+                ref1
+                  .update({
+                    // guarda id de la reseña en documento de Usuario
+                    reviews: b,
+                    notas: c,
+                  })
+                  .then((data) => {
+                    console.log("Document written successfully: ", data);
+
+                    ref2 //guarda id de la reseña en documento de la serie
+                      .get()
+                      .then((doc) => {
+                        if (doc.exists) {
+                          //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
+                          var a = doc.data().notas;
+
+                          console.log(a[_this.form.nota]);
+                          if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
+                          else a[_this.form.nota] += 1;
+
+                          ref2
+                            .update({
+                              reviews: firebase.firestore.FieldValue.arrayUnion(
+                                docRef.id
+                              ),
+                              notas: a,
+                            })
+                            .then((data) => {
+                              console.log(
+                                "Document written successfully: ",
+                                data
+                              );
+                              this.$router.go();
+                            })
+                            .catch((error) => {
+                              console.error("Error adding document: ", error);
+                              this.$router.go();
+                            });
+                        } else {
+                          //esta es la primera reseña de la serie --> hay que crearla en la base de datos
+                          var n = {};
+                          n[_this.form.nota] = 1;
+
+                          ref2
+                            .set({
+                              reviews: [docRef.id],
+                              notas: n,
+                            })
+                            .then((data) => {
+                              console.log(
+                                "Document written successfully: ",
+                                data
+                              );
+                              this.$router.go();
+                            })
+                            .catch((error) => {
+                              console.error("Error adding document: ", error);
+                              this.$router.go();
+                            });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error adding document: ", error);
+                      });
+                  })
+                  .catch((error) => {
+                    console.error("Error updating document: ", error);
+                  });
+              } else {
+                console.log("El documento no existe");
+              }
+            })
+            .catch((error) => {
+              console.error("Error getting document: ", error);
+            });
           /*
           ref1
             .update({
@@ -458,7 +561,7 @@ export default {
             .catch((error) => {
               console.error("Error adding document: ", error);
             });
-*/
+
           ref2 //guarda id de la reseña en documento de la serie
             .get()
             .then((doc) => {
@@ -508,6 +611,7 @@ export default {
             .catch((error) => {
               console.error("Error adding document: ", error);
             });
+            */
         })
         .catch((error) => {
           console.error("Error adding document: ", error);

@@ -169,6 +169,8 @@ export default {
               alternativo: "",
               reviews: [],
               amigos: [],
+              notas: {},
+              ultimoCap: []
             })
             .then(function () {
               console.log("Document successfully written!");

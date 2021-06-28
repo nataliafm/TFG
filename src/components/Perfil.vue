@@ -208,6 +208,19 @@
               <b-avatar :src="getAmigoFoto(i)"></b-avatar>
             </router-link>
           </b-avatar-group>
+
+          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">
+            Estadísticas de puntuación
+          </h5>
+          <span id="static-text" style="display: none">{{ leerNotas() }}</span>
+          <bar-chart :chartdata="datos" :options="options" :height="300" />
+          <div>Nota media: {{ getNotaMedia() }}</div>
+          <b-form-rating
+            v-model="notaMedia"
+            class="border-0"
+            stars="10"
+            readonly
+          ></b-form-rating>
         </b-col>
       </b-row>
       <b-row>
@@ -305,6 +318,61 @@ export default {
       amigos: [],
       datosObtenidosAmigos: false,
       renderAmigos: true,
+      notas: [],
+      notaMedia: 0.0,
+      datos: {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        datasets: [
+          {
+            label: "Número de votos",
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            backgroundColor: [
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+            ],
+            borderColor: [
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+              "rgba(75, 68, 83, 1)",
+            ],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
+            },
+          ],
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
+            },
+          ],
+        },
+      },
     };
   },
   created() {
@@ -332,6 +400,8 @@ export default {
         this.seriesF = [];
         this.perfilPropio = false;
         this.esAmigo = false;
+        this.notas = [];
+        this.datos.datasets[0].data = [];
       },
       deep: true,
       immediate: true,
@@ -535,6 +605,11 @@ export default {
           if (doc.exists) {
             console.log("Document data !!!!! :", doc.data());
             _this.datosUsuario = doc.data();
+            _this.notas = _this.datosUsuario.notas;
+
+            for (const l of Object.keys(_this.notas)) {
+              _this.datos.datasets[0].data[l - 1] = _this.notas[l];
+            }
 
             var amigos = JSON.parse(JSON.stringify(_this.datosUsuario.amigos));
 
@@ -545,7 +620,6 @@ export default {
                 _this.obtenerAmigoPorID(key);
               }
             } else {
-              console.log("entra amigos");
               _this.renderAmigos = false;
               _this.datosObtenidosAmigos = true;
             }
@@ -827,16 +901,34 @@ export default {
       this.serieMarcadaVista = idSerie;
       this.serieMarcadaVistaTemp = temp;
 
-      //comprobar si existe el siguiente capítulo en la misma temporada
-      themoviedb.tvEpisodes.getById(
-        {
-          id: idSerie,
-          season_number: temp,
-          episode_number: Number(num) + 1,
-        },
-        this.exitoSig1,
-        this.errorSig1
-      );
+      var db = firebase.firestore();
+      //var ident = firebase.auth().currentUser.uid;
+      var ident = this.getIdUsuario();
+
+      var ultimoCap = [idSerie, temp, num];
+
+      db.collection("Usuario")
+        .doc(ident)
+        .update({
+          ultimoCap: ultimoCap,
+        })
+        .then((data) => {
+          console.log("Operación realizada con éxito: ", data);
+
+          //comprobar si existe el siguiente capítulo en la misma temporada
+          themoviedb.tvEpisodes.getById(
+            {
+              id: idSerie,
+              season_number: temp,
+              episode_number: Number(num) + 1,
+            },
+            this.exitoSig1,
+            this.errorSig1
+          );
+        })
+        .catch((error) => {
+          console.log("Error: ", error);
+        });
     },
     exitoSig1(data) {
       console.log("Existe capitulo en la misma temporada");
@@ -1082,6 +1174,43 @@ export default {
     },
     getIdAmigo(i) {
       return this.idsAmigos[i];
+    },
+    getNotaMedia() {
+      var sum = 0;
+      var cont = 0;
+
+      for (var i in this.notas) {
+        console.log(i);
+        console.log(this.notas[i]);
+
+        cont += this.notas[i];
+        sum += i * this.notas[i];
+      }
+
+      if (sum == 0) {
+        this.notaMedia = 0;
+        return 0;
+      } else {
+        this.notaMedia = sum / cont;
+        return sum / cont;
+      }
+    },
+    leerNotas() {
+      var texto = "";
+
+      for (var i in this.notas) {
+        if (this.notas[i] > 1)
+          texto +=
+            this.notas[i] +
+            " personas le han dado una puntuación de " +
+            i +
+            ". ";
+        else
+          texto +=
+            this.notas[i] + " persona le ha dado una puntuación de " + i + ". ";
+      }
+
+      return texto;
     },
   },
 };

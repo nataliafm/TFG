@@ -1,7 +1,7 @@
 <template>
   <div class="inicio" v-bind:userstate="estaLogueado()">
     <div v-if="userstate">
-      Bienvenido, {{ username }}
+      Bienvenido/a, {{ username }}
       <InicioRegistrado />
     </div>
     <div v-if="!userstate">
