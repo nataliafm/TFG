@@ -8,39 +8,42 @@
         <b-navbar-nav class="ml-auto">
           <b-nav-item to="/registro" v-if="!userstate">Registrarse</b-nav-item>
           <b-nav-item to="/login" v-if="!userstate">Iniciar sesión</b-nav-item>
-          
-            <b-form-input
-              class="mr-sm-2"
-              placeholder="Búsqueda de una serie o persona"
-              v-model="form.busqueda"
-              v-if="userstate"
-            ></b-form-input>
-            <div class="my-sm-0 mr-4 bg-dark rounded" v-if="userstate">
-              <b-nav-item-dropdown text="Buscar" right>
-                <b-dropdown-item
-                  :to="{
-                    path: '/busqueda',
-                    query: { type: 'serie', query: form.busqueda },
-                  }"
-                  >Serie</b-dropdown-item
-                >
-                <b-dropdown-item
-                  :to="{
-                    path: '/busqueda',
-                    query: { type: 'persona', query: form.busqueda },
-                  }"
-                  >Persona</b-dropdown-item
-                >
-              </b-nav-item-dropdown>
-            </div>
-          
+
+          <b-form-input
+            class="mr-sm-2"
+            placeholder="Búsqueda de una serie o persona"
+            v-model="form.busqueda"
+            v-if="userstate"
+          ></b-form-input>
+          <div class="my-sm-0 mr-4 bg-dark rounded" v-if="userstate">
+            <b-nav-item-dropdown text="Buscar" right>
+              <b-dropdown-item
+                :to="{
+                  path: '/busqueda',
+                  query: { type: 'serie', query: form.busqueda },
+                }"
+                >Serie</b-dropdown-item
+              >
+              <b-dropdown-item
+                :to="{
+                  path: '/busqueda',
+                  query: { type: 'persona', query: form.busqueda },
+                }"
+                >Persona</b-dropdown-item
+              >
+            </b-nav-item-dropdown>
+          </div>
+
           <b-nav-item href="#" v-if="userstate">Listas</b-nav-item>
-          <b-nav-item href="#" v-if="userstate">Series</b-nav-item>
+          <b-nav-item href="/descubrir" v-if="userstate">Series</b-nav-item>
           <b-nav-item-dropdown text="Perfil" v-if="userstate" right>
-            <b-dropdown-item :to="{
-                    path: '/perfil',
-                    query: { id: getIdUsuario() },
-                  }">Perfil</b-dropdown-item>
+            <b-dropdown-item
+              :to="{
+                path: '/perfil',
+                query: { id: getIdUsuario() },
+              }"
+              >Perfil</b-dropdown-item
+            >
             <b-dropdown-item v-on:click="logout()"
               >Cerrar sesión</b-dropdown-item
             >
@@ -99,7 +102,7 @@ export default {
     },
     getIdUsuario() {
       return firebase.auth().currentUser.uid;
-    }
+    },
   },
 };
 </script>

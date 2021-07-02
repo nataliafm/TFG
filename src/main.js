@@ -19,6 +19,7 @@ import PaginaLista from "./components/paginaLista.vue";
 import Persona from "./components/Persona.vue";
 import Busqueda from "./components/Busqueda.vue";
 import BarChart from "./components/BarChart.vue";
+import DescubrirSeries from "./components/descubrirSeries.vue";
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -62,6 +63,7 @@ const router = new VueRouter({
     { path: '/paginaLista', name: 'paginaLista', component: PaginaLista },
     { path: '/persona', name: 'persona', component: Persona },
     { path: '/busqueda', name: 'busqueda', component: Busqueda },
+    { path: '/descubrir', name: 'descubrirSeries', component: DescubrirSeries },
   ]
 });
 
