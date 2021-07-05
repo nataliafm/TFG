@@ -193,25 +193,31 @@
         </b-col>
         <b-col cols="4" v-if="renderAmigos">
           <h3 align="left" class="mt-4">Amigos</h3>
-
-          <b-avatar-group
-            overlap="0"
-            v-for="i in Array(getLongAmigos()).keys()"
-            :key="i"
-          >
-            <router-link
-              :to="{
-                path: '/perfil',
-                query: { id: getIdAmigo(i) },
-              }"
+          <span>
+            <b-avatar-group
+              overlap="0"
+              v-for="i in Array(getNumFilasAmigos()).keys()"
+              :key="i"
+              size="44px"
             >
-              <b-avatar :src="getAmigoFoto(i)"></b-avatar>
-            </router-link>
-          </b-avatar-group>
+              <div v-for="j in Array(getPerPage()).keys()" :key="j">
+                <b-avatar
+                  :src="getAmigoFoto(i, j)"
+                  :alt="getAmigoFotoTexto(i, j)"
+                  :to="{
+                    path: '/perfil',
+                    query: { id: getIdAmigo(i, j) },
+                  }"
+                  v-if="getIdAmigo(i, j) != ''"
+                  class="mr-2 mb-2"
+                ></b-avatar>
+              </div>
+            </b-avatar-group>
+          </span>
 
-          <h5 class="mt-4" aria-describedby="static-text" tabindex="0">
+          <h3 class="mt-4" align="left" aria-describedby="static-text" tabindex="0">
             Estadísticas de puntuación
-          </h5>
+          </h3>
           <span id="static-text" style="display: none">{{ leerNotas() }}</span>
           <bar-chart :chartdata="datos" :options="options" :height="300" />
           <div>Nota media: {{ getNotaMedia() }}</div>
@@ -557,7 +563,7 @@ export default {
         .then((doc) => {
           if (doc.exists) {
             console.log("RESULTADO: ", doc.data());
-            _this.amigos[num] = doc.data().fotoPerfil;
+            _this.amigos[num] = [doc.data().fotoPerfil, doc.data().username];
 
             if (_this.amigos.length == _this.idsAmigos.length) {
               _this.datosObtenidosAmigos = true;
@@ -1165,15 +1171,23 @@ export default {
           console.log("Error writing document: ", error);
         });
     },
-    getAmigoFoto(i) {
-      if (this.amigos[i] != undefined) return this.amigos[i];
+    getAmigoFoto(i, j) {
+      if (this.amigos[i * this.getPerPage() + j] != undefined)
+        return this.amigos[i * this.getPerPage() + j][0];
+      else return "";
+    },
+    getAmigoFotoTexto(i, j) {
+      if (this.amigos[i * this.getPerPage() + j] != undefined)
+        return this.amigos[i * this.getPerPage() + j][1];
       else return "";
     },
     getLongAmigos() {
       return this.amigos.length;
     },
-    getIdAmigo(i) {
-      return this.idsAmigos[i];
+    getIdAmigo(i, j) {
+      if (this.idsAmigos[i * this.getPerPage() + j] != undefined)
+        return this.idsAmigos[i * this.getPerPage() + j];
+      else return "";
     },
     getNotaMedia() {
       var sum = 0;
@@ -1191,8 +1205,8 @@ export default {
         this.notaMedia = 0;
         return 0;
       } else {
-        this.notaMedia = sum / cont;
-        return sum / cont;
+        this.notaMedia = (sum / cont).toFixed(2);
+        return (sum / cont).toFixed(2);
       }
     },
     leerNotas() {
@@ -1202,15 +1216,22 @@ export default {
         if (this.notas[i] > 1)
           texto +=
             this.notas[i] +
-            " personas le han dado una puntuación de " +
+            " contenidos han obtenido una puntuación de " +
             i +
             ". ";
         else
           texto +=
-            this.notas[i] + " persona le ha dado una puntuación de " + i + ". ";
+            this.notas[i] + " contenido ha obtenido una puntuación de " + i + ". ";
       }
 
       return texto;
+    },
+    getNumFilasAmigos() {
+      console.log(
+        "longamigo: ",
+        Math.ceil(this.getLongAmigos() / this.perPage)
+      );
+      return Math.ceil(this.getLongAmigos() / this.perPage);
     },
   },
 };

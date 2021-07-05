@@ -4,8 +4,11 @@
       {{ getInfoAmigos() }}
     </div>
     <b-container v-if="infoAmigosObtenida">
-      <b-row>
-        <b-col>
+      <h3 v-if="!renderInfo">
+        Añade a amigos para ver su última actividad aquí
+      </h3>
+      <b-row v-if="renderInfo">
+        <b-col v-if="renderCaps">
           <h3 align="left" class="mb-4">Última actividad de tus amigos</h3>
           <b-pagination
             v-model="currentPageEpisodios"
@@ -43,15 +46,15 @@
                 :src="getFotoSerie(currentPageEpisodios, i)"
                 :alt="getAltSerie(currentPageEpisodios, i)"
               ></b-card-img>
-              <b-card-text class="mt-2">{{
+              <b-card-text class="mt-2 nombre">{{
                 getTextoCap(currentPageEpisodios, i)
               }}</b-card-text>
             </b-card>
           </b-card-group>
         </b-col>
       </b-row>
-      <b-row>
-        <b-col>
+      <b-row v-if="renderInfo">
+        <b-col v-if="renderReviews">
           <h3 align="left" class="mb-4">Últimas reseñas de tus amigos</h3>
           <b-card-group id="reviews" :key="getKey()">
             <b-row>
@@ -62,11 +65,16 @@
                   v-for="i in Array(getNumReviews()).keys()"
                   :key="i"
                 >
-                  <b-container>
+                  <b-container v-if="infoReviews[i] != undefined">
                     <b-row no-gutters>
                       <b-col sm="1">
-                        <b-card-img :src="getReviewFoto(i)" :alt="getReviewNombre(i)"></b-card-img>
-                        <b-card-text>{{ getReviewNombre(i) }}</b-card-text>
+                        <b-card-img
+                          :src="getReviewFoto(i)"
+                          :alt="getReviewNombre(i)"
+                        ></b-card-img>
+                        <b-card-text class="nombre">{{
+                          getReviewNombre(i)
+                        }}</b-card-text>
                       </b-col>
                       <b-col sm="11">
                         <router-link
@@ -86,9 +94,10 @@
                           >
                         </router-link>
                         <b-card-body>
-                          <b-row>
+                          <b-row no-gutters>
                             <b-col md="5">
                               <b-form-rating
+                                v-if="infoReviews[i] != undefined"
                                 v-model="infoReviews[i].nota"
                                 readonly
                                 stars="10"
@@ -136,7 +145,15 @@ export default {
       perPage: 6,
       llave: true,
       reviewActual: 0,
+      renderReviews: false,
+      renderCaps: false,
     };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.myEventHandler);
   },
   methods: {
     getInfoAmigos() {
@@ -166,13 +183,52 @@ export default {
           console.log("Error: ", error);
         });
     },
+    aniadirReview(datos, i) {
+      console.log("HA ENTRADO ", i, datos);
+      var db = firebase.firestore();
+      var ref = db.collection("Reviews").doc(datos.ultimoReview);
+      var _this = this;
+
+      ref
+        .get()
+        .then((d) => {
+          if (d.exists) {
+            console.log("RESULTADO 2: ", d.data());
+
+            console.log("kwjengkjeng ", i);
+
+            _this.infoReviews[i] = d.data();
+            _this.reviewActual = i;
+
+            console.log("aeiou ", _this.infoReviews);
+
+            if (d.data().idContenido.tipo == "serie") {
+              themoviedb.tv.getById(
+                { id: d.data().idContenido.id },
+                _this.exitoR,
+                _this.error
+              );
+            } else {
+              themoviedb.tv.getById(
+                { id: d.data().idContenido.id[0] },
+                _this.exitoR,
+                _this.error
+              );
+            }
+          } else {
+            console.log("Documento no existe");
+          }
+        })
+        .catch((error) => {
+          console.log("Error: ", error);
+        });
+    },
     getInfoAmigo(i) {
       var _this = this;
       var db = firebase.firestore();
-      this.reviewActual = i;
 
       db.collection("Usuario")
-        .doc(_this.idsAmigos[i])
+        .doc(this.idsAmigos[i])
         .get()
         .then((doc) => {
           if (doc.exists) {
@@ -186,44 +242,30 @@ export default {
             };
 
             _this.infoAmigos[i] = datos;
+            console.log("llega aqui ", datos);
+
+            console.log("holaholahola ", i, _this.infoAmigos);
+            console.log("ccccc ", _this.infoReviews);
+            console.log("ddddd ", _this.infoCapitulos);
+
+            console.log(datos.ultimoReview == undefined);
+            console.log(datos.ultimoCap.length == 0);
+            console.log(i);
 
             if (datos.ultimoReview != undefined) {
-              var ref = db.collection("Reviews").doc(datos.ultimoReview);
-
-              ref
-                .get()
-                .then((doc) => {
-                  if (doc.exists) {
-                    console.log("RESULTADO: ", doc.data());
-
-                    _this.infoReviews[i] = doc.data();
-
-                    if (_this.infoReviews[i].idContenido.tipo == "serie") {
-                      themoviedb.tv.getById(
-                        { id: _this.infoReviews[i].idContenido.id },
-                        _this.exitoR,
-                        _this.error
-                      );
-                    } else {
-                      themoviedb.tv.getById(
-                        { id: _this.infoReviews[i].idContenido.id[0] },
-                        _this.exitoR,
-                        _this.error
-                      );
-                    }
-                  } else {
-                    console.log("Documento no existe");
-                  }
-                })
-                .catch((error) => {
-                  console.log("Error: ", error);
-                });
-            } else if (datos.ultimoCap != []) {
+              console.log("llegaaa");
+              _this.aniadirReview(datos, i);
+            } else if (datos.ultimoCap.length > 0) {
               themoviedb.tv.getById(
                 { id: _this.infoAmigos[i].ultimoCap[0] },
                 _this.exito,
                 _this.error
               );
+            } else {
+              console.log("Holaaa");
+              if (_this.infoAmigos.length == _this.idsAmigos.length) {
+                _this.infoAmigosObtenida = true;
+              }
             }
           } else {
             console.log("Document doesn't exist");
@@ -231,22 +273,40 @@ export default {
         });
     },
     exitoR(data) {
-      console.log("Document data:", data);
+      console.log("Datosss:", data);
       var datos = JSON.parse(data);
 
-      var viejo = this.infoReviews[this.reviewActual];
+      this.renderReviews = true;
+
+      var id;
+
+      for (var k of this.infoReviews.keys()) {
+        if (this.infoReviews[k].idContenido.id[0] == datos["id"]) id = k;
+      }
+
+      var viejo = this.infoReviews[id];
 
       viejo["foto"] = datos["poster_path"];
       viejo["nombre"] = datos["name"];
 
-      themoviedb.tv.getById(
-        { id: this.infoAmigos[this.reviewActual].ultimoCap[0] },
-        this.exito,
-        this.error
-      );
+      this.infoReviews[id] = viejo;
+
+      if (this.infoAmigos[id].ultimoCap.length > 0) {
+        themoviedb.tv.getById(
+          { id: this.infoAmigos[id].ultimoCap[0] },
+          this.exito,
+          this.error
+        );
+      } else {
+        if (this.infoAmigos.length == this.idsAmigos.length && this.infoReviews.length == this.getNumR()){
+        //if (this.infoAmigos.length == this.idsAmigos.length) {
+          console.log("ha entrado 1");
+          this.infoAmigosObtenida = true;
+        }
+      }
     },
     exito(data) {
-      console.log("Document data:", data);
+      console.log("Document data 1:", data);
       var datos = JSON.parse(data);
 
       this.infoCapitulos.set(datos["id"], {
@@ -254,11 +314,32 @@ export default {
         nombre: datos["name"],
       });
 
-      if (this.infoAmigos.length == this.idsAmigos.length) {
-        console.log(this.infoAmigos);
-        console.log(this.infoReviews);
+      console.log("aaaaa ", this.infoCapitulos);
+
+      //if (this.infoAmigos.length == this.idsAmigos.length) {
+      if (this.infoAmigos.length == this.idsAmigos.length && this.infoCapitulos.size == this.getNumCapitulos()){
+        console.log("ha entrado 2", this.infoAmigos, this.infoCapitulos);
         this.infoAmigosObtenida = true;
+        this.renderCaps = true;
       }
+    },
+    getNumCapitulos() {
+      var num = 0;
+
+      for (var k of this.infoAmigos.keys()) {
+        if (this.infoAmigos[k].ultimoCap.length > 0) num++;
+      }
+
+      return num;
+    },
+    getNumR(){
+      var num = 0;
+
+      for (var k of this.infoAmigos.keys()){
+        if (this.infoAmigos[k].ultimoReview != "") num++;
+      }
+
+      return num;
     },
     error(data) {
       console.log("Error: ", data);
@@ -269,6 +350,21 @@ export default {
     getNumReviews() {
       return this.infoReviews.length;
     },
+    myEventHandler(e) {
+      console.log(e.target.innerWidth);
+      if (e.target.innerWidth < 580) {
+        this.perPage = 2;
+        this.perPageLista = 2;
+      } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200) {
+        this.perPage = 3;
+        this.perPageLista = 2;
+      } else {
+        this.perPage = 6;
+        this.perPageLista = 3;
+      }
+
+      this.llave = !this.llave;
+    },
     getPerPage() {
       return this.perPage;
     },
@@ -276,24 +372,96 @@ export default {
       return this.llave;
     },
     getFotoPerfil(i, j) {
-      if (this.infoAmigos[(i - 1) * this.perPage + j] != undefined)
-        return this.infoAmigos[(i - 1) * this.perPage + j].fotoPerfil;
-      else return "";
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+      var indexAmigo;
+
+      if (path != undefined) {
+        for (var x of this.infoAmigos.keys()) {
+          if (this.infoAmigos[x].ultimoCap.length > 0) {
+            if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
+              console.log("entra aqui");
+              indexAmigo = x;
+            }
+          }
+        }
+
+        if (this.infoAmigos[indexAmigo] != undefined)
+          return this.infoAmigos[indexAmigo].fotoPerfil;
+        else return "";
+      } else return "";
     },
     getAltPerfil(i, j) {
-      if (this.infoAmigos[(i - 1) * this.perPage + j] != undefined)
-        return this.infoAmigos[(i - 1) * this.perPage + j].altPerfil;
-      else return "";
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+      var indexAmigo;
+
+      if (path != undefined) {
+        for (var x of this.infoAmigos.keys()) {
+          if (this.infoAmigos[x].ultimoCap.length > 0) {
+            if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
+              console.log("entra aqui");
+              indexAmigo = x;
+            }
+          }
+        }
+
+        if (this.infoAmigos[indexAmigo] != undefined)
+          return this.infoAmigos[indexAmigo].altPerfil;
+        else return "";
+      } else return "";
     },
     getUsernamePerfil(i, j) {
-      if (this.infoAmigos[(i - 1) * this.perPage + j] != undefined)
-        return this.infoAmigos[(i - 1) * this.perPage + j].username;
-      else return "";
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+      var indexAmigo;
+
+      if (path != undefined) {
+        for (var x of this.infoAmigos.keys()) {
+          if (this.infoAmigos[x].ultimoCap.length > 0) {
+            if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
+              console.log("entra aqui");
+              indexAmigo = x;
+            }
+          }
+        }
+
+        if (this.infoAmigos[indexAmigo] != undefined)
+          return this.infoAmigos[indexAmigo].username;
+        else return "";
+      } else return "";
     },
     getIdAmigo(i, j) {
-      if (this.idsAmigos[(i - 1) * this.perPage + j] != undefined)
-        return this.idsAmigos[(i - 1) * this.perPage + j];
-      else return "";
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+      var indexAmigo;
+
+      if (path != undefined) {
+        for (var x of this.infoAmigos.keys()) {
+          if (this.infoAmigos[x].ultimoCap.length > 0) {
+            if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
+              console.log("entra aqui");
+              indexAmigo = x;
+            }
+          }
+        }
+
+        if (this.idsAmigos[indexAmigo] != undefined)
+          return this.idsAmigos[indexAmigo];
+        else return "";
+      } else return "";
     },
     getFotoPerfilR(i) {
       if (this.infoAmigos[i] != undefined) return this.infoAmigos[i].fotoPerfil;
@@ -312,10 +480,15 @@ export default {
       else return "";
     },
     getFotoSerie(i, j) {
-      var path = this.infoAmigos[(i - 1) * this.getPerPage() + j];
+      console.log("holap ", this.infoCapitulos);
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
 
       if (path != undefined) {
-        var cap = this.infoCapitulos.get(path.ultimoCap[0]);
+        var cap = path[1];
 
         if (cap.foto != undefined && cap.foto != null)
           return "https://image.tmdb.org/t/p/original" + cap.foto;
@@ -324,28 +497,48 @@ export default {
       } else return "";
     },
     getAltSerie(i, j) {
-      if (this.infoAmigos[(i - 1) * this.perPage + j] != undefined) {
-        var cap = this.infoCapitulos.get(
-          this.infoAmigos[(i - 1) * this.perPage + j].ultimoCap[0]
-        );
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+
+      if (path != undefined) {
+        var cap = path[1];
         return cap.nombre;
       } else return "";
     },
     getTextoCap(i, j) {
-      if (this.infoAmigos[(i - 1) * this.perPage + j] != undefined)
-        return (
-          "Temporada " +
-          this.infoAmigos[(i - 1) * this.perPage + j].ultimoCap[1] +
-          " Capítulo " +
-          this.infoAmigos[(i - 1) * this.perPage + j].ultimoCap[2]
-        );
-      else return "";
+      var array = [];
+      var llaves = this.infoCapitulos.entries();
+
+      array = Array.from(llaves);
+      var path = array[(i - 1) * this.getPerPage() + j];
+      var indexAmigo;
+
+      if (path != undefined) {
+        for (var x of this.infoAmigos.keys()) {
+          if (this.infoAmigos[x].ultimoCap.length > 0) {
+            if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
+              console.log("entra aqui");
+              indexAmigo = x;
+            }
+          }
+        }
+
+        var cap = this.infoAmigos[indexAmigo];
+
+        if (cap.ultimoCap != undefined)
+          return (
+            "Temporada " + cap.ultimoCap[1] + ", Capítulo " + cap.ultimoCap[2]
+          );
+        else return "";
+      } else return "";
     },
     getReviewTexto(i) {
       if (this.infoReviews[i] != undefined) {
         return this.infoReviews[i].texto;
-      }
-      else return "";
+      } else return "";
     },
     getReviewFoto(i) {
       var path = this.infoReviews[i];
@@ -361,10 +554,25 @@ export default {
     },
     getReviewNombre(i) {
       if (this.infoReviews[i] != undefined) {
-        return this.infoReviews[i].nombre;
-      }
-      else return "";
-    }
+        console.log(this.infoReviews);
+        if (this.infoReviews[i].idContenido.tipo == "serie")
+          return this.infoReviews[i].nombre;
+        else if (this.infoReviews[i].idContenido.tipo == "temporada")
+          return (
+            this.infoReviews[i].nombre +
+            ", temporada " +
+            this.infoReviews[i].idContenido.id[1]
+          );
+        else
+          return (
+            this.infoReviews[i].nombre +
+            ", temporada " +
+            this.infoReviews[i].idContenido.id[1] +
+            ", episodio " +
+            this.infoReviews[i].idContenido.id[2]
+          );
+      } else return "";
+    },
   },
 };
 </script>
@@ -384,5 +592,10 @@ li {
 }
 a {
   color: #42b983;
+}
+.nombre {
+  margin-top: 1em;
+  color: #4b4453;
+  font-size: small;
 }
 </style>

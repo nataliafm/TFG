@@ -7,7 +7,7 @@
       <h2 align="left" class="mb-4 mt-4">Descubre nuevas series</h2>
       <b-form @submit.prevent="nuevaBusqueda">
         <b-row>
-          <b-col cols="3">
+          <b-col md="3">
             <b-form-group label="Idioma">
               <b-form-select
                 v-model="idioma"
@@ -16,7 +16,7 @@
             </b-form-group>
           </b-col>
 
-          <b-col cols="3">
+          <b-col md="3">
             <b-form-group label="Incluir géneros">
               <b-form-select
                 v-model="conGenre"
@@ -26,7 +26,7 @@
             </b-form-group>
           </b-col>
 
-          <b-col cols="3">
+          <b-col md="3">
             <b-form-group label="Excluir géneros">
               <b-form-select
                 v-model="sinGenre"
@@ -38,7 +38,7 @@
 
           <!-- añadir un nuevo form-select cuando se ha elegido uno -->
 
-          <b-col cols="3">
+          <b-col md="3">
             <b-form-group label="Año de estreno">
               <b-form-select v-model="fecha" :options="anios"></b-form-select>
             </b-form-group>
@@ -104,7 +104,6 @@
           </b-card-group>
       </b-card-group>
     </b-container>
-    {{ resultados }}
   </div>
 </template>
 
@@ -166,8 +165,6 @@ export default {
       this.resultados = datos;
 
       this.getIdiomas();
-
-      //this.getGenres();
     },
     error(data) {
       console.log("Error: ", data);

@@ -498,8 +498,6 @@ export default {
       this.temporadas = c;
       this.contadorTemporadas = aux;
 
-      console.log(this.temporadas[1]["name"]);
-
       for (var m = 0, k = 1; m < this.temporadas.length; m += 6, k++) {
         this.paginasTemporadas.push(k);
       }
