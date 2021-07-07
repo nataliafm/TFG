@@ -68,40 +68,40 @@
       ></b-pagination>
       <b-card-group id="resultados">
         <b-card-group id="resultados">
-            <b-row>
-              <b-col cols="12">
-                <b-card
-                  no-body
-                  class="overflow-hidden border-0 mb-3 text-left"
-                  v-for="i in Array(getNumRes()).keys()"
-                  :key="i"
-                >
-                  <b-container>
-                    <b-row no-gutters>
-                      <b-col md="2">
-                        <b-card-img
-                          :src="getPoster(i)"
-                          :alt="'Poster de la serie ' + getNombre(i)"
-                        ></b-card-img>
-                      </b-col>
-                      <b-col md="10">
-                        <b-card-body>
-                          <router-link
-                            :to="{ path: '/serie', query: { id: getId(i) } }"
-                          >
-                            <b-card-title style="color: #9a7acd">{{
-                              getNombre(i)
-                            }}</b-card-title>
-                          </router-link>
-                          <b-card-text>{{ getDescripcion(i) }}</b-card-text>
-                        </b-card-body>
-                      </b-col>
-                    </b-row>
-                  </b-container>
-                </b-card>
-              </b-col>
-            </b-row>
-          </b-card-group>
+          <b-row>
+            <b-col cols="12">
+              <b-card
+                no-body
+                class="overflow-hidden border-0 mb-3 text-left"
+                v-for="i in Array(getNumRes()).keys()"
+                :key="i"
+              >
+                <b-container>
+                  <b-row no-gutters>
+                    <b-col md="2">
+                      <b-card-img
+                        :src="getPoster(i)"
+                        :alt="'Poster de la serie ' + getNombre(i)"
+                      ></b-card-img>
+                    </b-col>
+                    <b-col md="10">
+                      <b-card-body>
+                        <router-link
+                          :to="{ path: '/serie', query: { id: getId(i) } }"
+                        >
+                          <b-card-title style="color: #9a7acd">{{
+                            getNombre(i)
+                          }}</b-card-title>
+                        </router-link>
+                        <b-card-text>{{ getDescripcion(i) }}</b-card-text>
+                      </b-card-body>
+                    </b-col>
+                  </b-row>
+                </b-container>
+              </b-card>
+            </b-col>
+          </b-row>
+        </b-card-group>
       </b-card-group>
     </b-container>
   </div>
@@ -134,7 +134,7 @@ export default {
       listaFecha: false,
       perPage: 20,
       currentPage: 1,
-      query: {}
+      query: {},
     };
   },
   watch: {
@@ -188,8 +188,6 @@ export default {
 
       this.idiomas = idiomas;
 
-      console.log("kerngekrjngkerjg ", this.idiomas);
-
       this.getGenres();
     },
     exitoGenres(data) {
@@ -201,8 +199,6 @@ export default {
       for (var i of datos["genres"]) {
         generos.push({ value: i.id, text: i.name });
       }
-
-      console.log(generos);
 
       this.datosObtenidos = true;
       this.generos = generos;
@@ -248,22 +244,20 @@ export default {
     getNombre(i) {
       if (this.resultados["results"][i] != undefined)
         return this.resultados["results"][i]["name"];
-      else{
-          console.log(this.resultados["results"][i]);
-          return "";
-    }
+      else {
+        return "";
+      }
     },
     getPoster(i) {
-      if (this.resultados["results"][i] != undefined){
-      if (this.resultados["results"][i]["poster_path"] != null) {
-        return (
-          "https://image.tmdb.org/t/p/original" +
-          String(this.resultados["results"][i]["poster_path"])
-        );
-      } else
-        return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
-      }
-      else return "";
+      if (this.resultados["results"][i] != undefined) {
+        if (this.resultados["results"][i]["poster_path"] != null) {
+          return (
+            "https://image.tmdb.org/t/p/original" +
+            String(this.resultados["results"][i]["poster_path"])
+          );
+        } else
+          return "https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/notfoundimage.png?alt=media&token=18058605-604d-4330-9fe2-b5706d9d1835";
+      } else return "";
     },
     getDescripcion(i) {
       if (this.resultados["results"][i] != undefined)
