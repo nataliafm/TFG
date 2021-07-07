@@ -291,7 +291,6 @@ export default {
   },
   methods: {
     myEventHandler(e) {
-      console.log(e.target.innerWidth);
       if (e.target.innerWidth < 580) {
         this.perPage = 1;
       } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1000) {
@@ -456,8 +455,6 @@ export default {
               if (doc.exists) {
                 var c = doc.data().notas;
 
-                console.log(c);
-
                 if (c == []){
                   var m = {};
                   m[_this.form.nota] = 1;
@@ -470,9 +467,6 @@ export default {
                 var b = doc.data().reviews;
                 if (b == []) b = [docRef.id];
                 else b.push(docRef.id);
-
-                console.log(c);
-                console.log(b);
 
                 ref1
                   .update({
@@ -490,7 +484,6 @@ export default {
                           //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
                           var a = doc.data().notas;
 
-                          console.log(a[_this.form.nota]);
                           if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
                           else a[_this.form.nota] += 1;
 
@@ -549,69 +542,6 @@ export default {
             .catch((error) => {
               console.error("Error getting document: ", error);
             });
-          /*
-          ref1
-            .update({
-              // guarda id de la reseña en documento de Usuario
-              reviews: firebase.firestore.FieldValue.arrayUnion(docRef.id),
-            })
-            .then((data) => {
-              console.log("Document written successfully: ", data);
-            })
-            .catch((error) => {
-              console.error("Error adding document: ", error);
-            });
-
-          ref2 //guarda id de la reseña en documento de la serie
-            .get()
-            .then((doc) => {
-              if (doc.exists) {
-                //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
-                var a = doc.data().notas;
-
-                console.log(a[_this.form.nota]);
-                if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
-                else a[_this.form.nota] += 1;
-
-                ref2
-                  .update({
-                    reviews: firebase.firestore.FieldValue.arrayUnion(
-                      docRef.id
-                    ),
-                    notas: a,
-                  })
-                  .then((data) => {
-                    console.log("Document written successfully: ", data);
-                    this.$router.go();
-                  })
-                  .catch((error) => {
-                    console.error("Error adding document: ", error);
-                    this.$router.go();
-                  });
-              } else {
-                //esta es la primera reseña de la serie --> hay que crearla en la base de datos
-                var n = {};
-                n[_this.form.nota] = 1;
-
-                ref2
-                  .set({
-                    reviews: [docRef.id],
-                    notas: n,
-                  })
-                  .then((data) => {
-                    console.log("Document written successfully: ", data);
-                    this.$router.go();
-                  })
-                  .catch((error) => {
-                    console.error("Error adding document: ", error);
-                    this.$router.go();
-                  });
-              }
-            })
-            .catch((error) => {
-              console.error("Error adding document: ", error);
-            });
-            */
         })
         .catch((error) => {
           console.error("Error adding document: ", error);
@@ -683,8 +613,6 @@ export default {
             _this.notas = JSON.parse(JSON.stringify(doc.data())).notas;
 
             for (const l of Object.keys(doc.data().notas)) {
-              console.log(l);
-              console.log(_this.datos.datasets[0].data[l - 1]);
               _this.datos.datasets[0].data[l - 1] = doc.data().notas[l];
             }
 
@@ -732,9 +660,6 @@ export default {
       var cont = 0;
 
       for (var i in this.notas) {
-        console.log(i);
-        console.log(this.notas[i]);
-
         cont += this.notas[i];
         sum += i * this.notas[i];
       }
