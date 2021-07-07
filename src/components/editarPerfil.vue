@@ -17,7 +17,13 @@
           <b-row align-h="center">
             <b-col cols="3">
               <div class="mb-2">Imagen actual:</div>
-              <b-img rounded="circle" fluid :src="fotoPerfil" alt="Imagen de perfil actual" class="mb-4"></b-img>
+              <b-img
+                rounded="circle"
+                fluid
+                :src="fotoPerfil"
+                alt="Imagen de perfil actual"
+                class="mb-4"
+              ></b-img>
             </b-col>
           </b-row>
           <b-form @submit.prevent="enviarArchivo" class="mt-4">
@@ -41,7 +47,10 @@
               </b-row>
               <b-row>
                 <b-col>
-                  <div class="mb-4">Para evitar que se recorte, asegúrate de que la foto es cuadrada</div>
+                  <div class="mb-4">
+                    Para evitar que se recorte, asegúrate de que la foto es
+                    cuadrada
+                  </div>
                   <b-button type="submit" variant="primary">Enviar</b-button>
                 </b-col>
               </b-row>
@@ -666,7 +675,6 @@ export default {
     },
     cambiarContrasenia() {
       var user = firebase.auth().currentUser;
-      console.log(user);
       var _this = this;
 
       var credential = firebase.auth.EmailAuthProvider.credential(
@@ -679,8 +687,10 @@ export default {
           .updatePassword(_this.form.passNueva)
           .then(function () {
             console.log("Document successfully written!");
-            _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
-            
+            _this.$router.push({
+              path: "/perfil",
+              query: { id: firebase.auth().currentUser.uid },
+            });
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);
@@ -708,7 +718,10 @@ export default {
               )
               .then(function () {
                 console.log("documento escrito");
-                _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
+                _this.$router.push({
+                  path: "/perfil",
+                  query: { id: firebase.auth().currentUser.uid },
+                });
               });
           });
         });
@@ -745,29 +758,7 @@ export default {
       else correo = this.form.email;
 
       seriesFavoritas = this.seriesFavoritas;
-      /*
-      if (this.file1) {
-        var ref = firebase.storage().ref();
-        var path = ref.child("images/" + this.file1.name);
 
-        path.put(this.file1).then(function (snapshot) {
-          snapshot.ref.getDownloadURL().then(function (url) {
-            db.collection("Usuario")
-              .doc(ident)
-              .set(
-                {
-                  fotoPerfil: url,
-                },
-                { merge: true }
-              )
-              .then(function () {
-                console.log("documento escrito");
-                _this.$router.push({ path: "/perfil" });
-              });
-          });
-        });
-      }
-*/
       if (
         this.nombre != nombre ||
         this.pais != pais ||
@@ -792,32 +783,18 @@ export default {
           .then(function () {
             console.log("Document successfully written!");
 
-            if (
-              _this.email != correo /*|| _this.$v.form.password.$model != ""*/
-            ) {
+            if (_this.email != correo) {
               var user = firebase.auth().currentUser;
 
               user
                 .updateEmail(correo)
                 .then(function () {
                   console.log("Document successfully written!");
-                  /*
-                  if (_this.$v.form.password.$model != undefined) {
-                    user
-                      .updatePassword(_this.$v.form.password.$model)
-                      .then(function () {
-                        console.log("Document successfully written!");
-                        _this.$router.push({ path: "/perfil" });
-                      })
-                      .catch(function (error) {
-                        console.log("Error writing document: ", error);
-                      });
-                  } else {
-                    _this.$router.push({ path: "/perfil" });
-                  }
-                  */
 
-                  _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
+                  _this.$router.push({
+                    path: "/perfil",
+                    query: { id: firebase.auth().currentUser.uid },
+                  });
                 })
                 .catch(function (error) {
                   console.log("Error writing document: ", error);
@@ -829,38 +806,26 @@ export default {
                   }
                 });
             } else {
-              _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
+              _this.$router.push({
+                path: "/perfil",
+                query: { id: firebase.auth().currentUser.uid },
+              });
             }
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);
           });
-      } else if (
-        this.email != correo /* ||
-        this.$v.form.password.$model != undefined*/
-      ) {
+      } else if (this.email != correo) {
         var user = firebase.auth().currentUser;
 
         user
           .updateEmail(correo)
           .then(function () {
             console.log("Document successfully written!");
-            /*
-            if (_this.$v.form.password.$model != "") {
-              user
-                .updatePassword(_this.$v.form.password.$model)
-                .then(function () {
-                  console.log("Document successfully written!");
-                  _this.$router.push({ path: "/perfil" });
-                })
-                .catch(function (error) {
-                  console.log("Error writing document: ", error);
-                });
-            } else {
-              _this.$router.push({ path: "/perfil" });
-            }
-*/
-            _this.$router.push({ path: "/perfil", query: { id: firebase.auth().currentUser.uid } });
+            _this.$router.push({
+              path: "/perfil",
+              query: { id: firebase.auth().currentUser.uid },
+            });
           })
           .catch(function (error) {
             console.log("Error writing document: ", error);
@@ -893,7 +858,6 @@ export default {
       var yaEsta = false;
 
       var empezadas = this.seriesFavoritas;
-      console.log(empezadas);
 
       for (var i = 0; i < empezadas.length; i++) {
         if (Object.keys(empezadas[i])[0] == id) {
@@ -904,7 +868,6 @@ export default {
       if (!yaEsta) {
         var aux = {};
         aux[id] = { nombre: this.form.serie };
-        console.log(this.seriesFavoritas);
 
         this.seriesFavoritas.push(aux);
         this.serieYaEsta = false;
