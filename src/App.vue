@@ -1,7 +1,7 @@
 <template>
-  <div id="app">
-    <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top">
-      <b-navbar-brand>LOGO</b-navbar-brand>
+  <div id="app" style="margin-top: 90px;">
+    <b-navbar toggleable="lg" type="dark" variant="primary" fixed="top" class="navbar-custom">
+      <b-navbar-brand to="/"><img height="50" src="https://firebasestorage.googleapis.com/v0/b/mitfg-12618.appspot.com/o/logo-banner.png?alt=media&token=03ea6402-411e-4531-9c47-c7151bb543dd"></b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
       <b-collapse id="nav-collapse" is-nav>
