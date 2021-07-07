@@ -424,11 +424,9 @@ export default {
       return this.datosUsuario.seriesPendientes.length;
     },
     getNumListas() {
-      console.log("HAY " + this.datosUsuario.listasSeries.length + " listas");
       return this.datosUsuario.listasSeries.length;
     },
     obtenerSeriePorID(num) {
-      console.log(num);
       var idSeries = this.datosUsuario.seriesEmpezadas;
       var parsedobj = JSON.parse(JSON.stringify(idSeries));
 
@@ -512,7 +510,6 @@ export default {
       var series = JSON.parse(
         JSON.stringify(this.datosUsuario.seriesPendientes)
       );
-      console.log(series);
 
       var llaves = series.keys();
 
@@ -575,7 +572,6 @@ export default {
     },
     obtenerDatosUsuario() {
       var _this = this;
-      //var ident = firebase.auth().currentUser.uid;
       var ident = this.getIdUsuario();
       var db = firebase.firestore();
       var ref = db.collection("Usuario").doc(ident);
@@ -609,7 +605,7 @@ export default {
         .get()
         .then((doc) => {
           if (doc.exists) {
-            console.log("Document data !!!!! :", doc.data());
+            console.log("Document data: ", doc.data());
             _this.datosUsuario = doc.data();
             _this.notas = _this.datosUsuario.notas;
 
@@ -641,7 +637,6 @@ export default {
                 _this.obtenerListaPorID(key);
               }
             } else {
-              console.log("entra listas");
               _this.renderListas = false;
               _this.datosObtenidosListas = true;
             }
@@ -650,29 +645,12 @@ export default {
               JSON.stringify(_this.datosUsuario.seriesEmpezadas)
             );
             if (seriesEmp.length > 0) {
-              /*
-              for (
-                var m = 0, k = 1;
-                m < _this.datosUsuario.seriesEmpezadas.length;
-                m += 6, k++
-              ) {
-                _this.paginasEmpezadas.push(k);
-              }
-
-              _this.contadorEmpezadas =
-                _this.datosUsuario.seriesEmpezadas.length;
-
-              if (_this.contadorEmpezadas < 6)
-                _this.numElementosEmpezadas = Array.from(Array(6).keys());
-              else _this.numElementosEmpezadas = Array.from(Array(6).keys());
-              */
               var idSeries = _this.datosUsuario.seriesEmpezadas.keys();
 
               for (const key of idSeries) {
                 _this.obtenerSeriePorID(key);
               }
             } else {
-              console.log("entra empezados");
               _this.renderEmp = false;
               _this.datosObtenidos = true;
             }
@@ -702,7 +680,6 @@ export default {
                 _this.obtenerSeriePorIDFav(key);
               }
             } else {
-              console.log("entra favoritos");
               _this.renderFav = false;
               _this.datosObtenidosFav = true;
             }
@@ -715,16 +692,12 @@ export default {
                 _this.datosUsuario.seriesPendientes.length;
               _this.numElementosPendientes = Array.from(Array(6).keys());
 
-              console.log(_this.datosUsuario.seriesPendientes);
-              console.log(_this.datosUsuario.seriesPendientes[0]);
-
               var idSeriesP = _this.datosUsuario.seriesPendientes.keys();
 
               for (const key of idSeriesP) {
                 _this.obtenerSeriePorIDPend(key);
               }
             } else {
-              console.log("entra pendientes");
               _this.renderPend = false;
               _this.datosObtenidosPend = true;
             }
@@ -757,7 +730,6 @@ export default {
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreSerie(i, j) {
@@ -806,7 +778,6 @@ export default {
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreSerieFav(i, j) {
@@ -839,7 +810,6 @@ export default {
         return "https://image.tmdb.org/t/p/original" + path;
       } else {
         return "";
-        //return "https://upload.wikimedia.org/wikipedia/commons/3/3b/Picture_Not_Yet_Available.png";
       }
     },
     getNombreSeriePend(i, j) {
@@ -875,7 +845,6 @@ export default {
       else return "";
     },
     myEventHandler(e) {
-      console.log(e.target.innerWidth);
       if (e.target.innerWidth < 580) {
         this.perPage = 2;
         this.perPageLista = 2;
@@ -890,11 +859,9 @@ export default {
       this.llave = !this.llave;
     },
     getKey() {
-      console.log(this.llave);
       return this.llave;
     },
     getPerPage() {
-      console.log(this.perPage);
       return this.perPage;
     },
     getPerPageLista() {
@@ -908,7 +875,6 @@ export default {
       this.serieMarcadaVistaTemp = temp;
 
       var db = firebase.firestore();
-      //var ident = firebase.auth().currentUser.uid;
       var ident = this.getIdUsuario();
 
       var ultimoCap = [idSerie, temp, num];
@@ -957,7 +923,6 @@ export default {
           };
 
           var db = firebase.firestore();
-          //var ident = firebase.auth().currentUser.uid;
           var ident = this.getIdUsuario();
           var _this = this;
 
@@ -1016,7 +981,6 @@ export default {
           };
 
           var db = firebase.firestore();
-          //var ident = firebase.auth().currentUser.uid;
           var ident = this.getIdUsuario();
           var _this = this;
 
@@ -1054,7 +1018,6 @@ export default {
       var datos = JSON.parse(data);
       var enProduccion = datos["in_production"];
       var db = firebase.firestore();
-      //var ident = firebase.auth().currentUser.uid;
       var ident = this.getIdUsuario();
       var _this = this;
 
@@ -1125,7 +1088,6 @@ export default {
           empezadasUpdated.splice(i, 1);
 
           var db = firebase.firestore();
-          //var ident = firebase.auth().currentUser.uid;
           var ident = this.getIdUsuario();
           var _this = this;
 
@@ -1148,8 +1110,6 @@ export default {
       }
     },
     getIdUsuario() {
-      //var _this = this;
-      console.log("HOLAAAAAAAAAAAAAAAAAA DTRNJRTH ", this.$route.query.id);
       return this.$route.query.id;
     },
     aniadirAmigo() {
@@ -1194,9 +1154,6 @@ export default {
       var cont = 0;
 
       for (var i in this.notas) {
-        console.log(i);
-        console.log(this.notas[i]);
-
         cont += this.notas[i];
         sum += i * this.notas[i];
       }
@@ -1227,10 +1184,6 @@ export default {
       return texto;
     },
     getNumFilasAmigos() {
-      console.log(
-        "longamigo: ",
-        Math.ceil(this.getLongAmigos() / this.perPage)
-      );
       return Math.ceil(this.getLongAmigos() / this.perPage);
     },
   },
