@@ -488,8 +488,6 @@ export default {
       var aux = this.resultado["seasons"].length;
       var c = [];
 
-      console.log(aux);
-
       for (var o = 0; o < aux; o++) {
         var res = this.resultado["seasons"][o];
         c.push(res);
@@ -501,8 +499,6 @@ export default {
       for (var m = 0, k = 1; m < this.temporadas.length; m += 6, k++) {
         this.paginasTemporadas.push(k);
       }
-
-      console.log(this.paginasTemporadas[0]);
 
       if (this.contadorTemporadas >= 6) {
         this.numTemporada = Array.from(Array(6).keys());
@@ -563,7 +559,6 @@ export default {
       );
     },
     getNumPaginas() {
-      console.log("ekjrngkejrg " + (Math.floor(this.creadores.length / 6) + 1));
       if (this.finLoop) return String(0);
       else return String(Math.floor(this.creadores.length / 6) + 1);
     },
@@ -587,7 +582,7 @@ export default {
 
       for (var n = 0; n < this.creadores.length; n++) {
         this.getImagenes(this.creadores[n]["id"]).then((res) => {
-          console.log("jdhfbdf" + res);
+          console.log(res);
         });
       }
 
@@ -600,15 +595,12 @@ export default {
       return " hola";
     },
     async getImagenes(id) {
-      console.log("dkjrgnhekrjg" + id);
       themoviedb.people.getImages({ id: id }, this.success3, this.error3);
       return " hola";
     },
     getNumElementos() {
       var aux = this.contador;
       this.contador -= 6;
-
-      console.log("wgekjgekjr   " + aux);
 
       if (aux > 0 && aux < 6) this.numElementos = Array.from(Array(6).keys());
       else if (aux <= 0) {
@@ -624,8 +616,6 @@ export default {
       else if (aux <= 0) {
         this.seguir = false;
       } else this.numTemporada = Array.from(Array(6).keys());
-
-      console.log("numTemporada " + this.numTemporada);
     },
     success3(data) {
       console.log("Success callback: " + data);
@@ -646,7 +636,6 @@ export default {
     },
     getCreador(i, j) {
       var path = String(this.pathFotos[(i - 1) * this.getPerPage() + j]);
-      console.log(path);
 
       if (path != "NODISPONIBLE" && path != undefined) {
         return (
@@ -675,9 +664,6 @@ export default {
       var path = this.temporadas[(i - 1) * this.getPerPage() + j];
 
       if (path["poster_path"] != null && path != undefined) {
-        console.log(
-          this.temporadas[(i - 1) * this.getPerPage() + j]["poster_path"]
-        );
         return (
           "https://image.tmdb.org/t/p/original" +
           String(
@@ -689,8 +675,6 @@ export default {
     },
     getNombreTemporada(i, j) {
       var path = this.temporadas[(i - 1) * this.getPerPage() + j];
-
-      console.log(i - 1, j, (i - 1) * this.getPerPage() + j, "fea");
 
       if (path != undefined)
         return this.temporadas[(i - 1) * this.getPerPage() + j]["name"];
@@ -706,7 +690,6 @@ export default {
     },
     success4(data) {
       console.log("Success callback: " + data);
-      console.log("llega");
 
       var aux = JSON.parse(data);
       this.capitulos = aux["episodes"];
@@ -776,7 +759,6 @@ export default {
     },
     seriePendiente() {
       var id = this.getIdTemporada();
-      console.log(id);
 
       var ident = firebase.auth().currentUser.uid;
       var db = firebase.firestore();
@@ -821,7 +803,6 @@ export default {
       }
     },
     myEventHandler(e) {
-      console.log(e.target.innerWidth);
       if (e.target.innerWidth < 580) {
         this.perPage = 1;
       } else if (e.target.innerWidth > 580 && e.target.innerWidth < 1200) {
@@ -839,9 +820,6 @@ export default {
       return this.perPage;
     },
     submit() {
-      console.log(this.form.nota);
-      console.log(this.form.texto);
-
       var _this = this;
       var db = firebase.firestore();
       var ref = db.collection("Reviews");
@@ -872,8 +850,6 @@ export default {
               if (doc.exists) {
                 var c = doc.data().notas;
 
-                console.log(c);
-
                 if (c == []){
                   var m = {};
                   m[_this.form.nota] = 1;
@@ -886,9 +862,6 @@ export default {
                 var b = doc.data().reviews;
                 if (b == []) b = [docRef.id];
                 else b.push(docRef.id);
-
-                console.log(c);
-                console.log(b);
 
                 ref1
                   .update({
@@ -906,7 +879,6 @@ export default {
                           //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
                           var a = doc.data().notas;
 
-                          console.log(a[_this.form.nota]);
                           if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
                           else a[_this.form.nota] += 1;
 
@@ -965,69 +937,6 @@ export default {
             .catch((error) => {
               console.error("Error getting document: ", error);
             });
-          /*
-          ref1
-            .update({
-              // guarda id de la reseña en documento de Usuario
-              reviews: firebase.firestore.FieldValue.arrayUnion(docRef.id),
-            })
-            .then((data) => {
-              console.log("Document written successfully: ", data);
-            })
-            .catch((error) => {
-              console.error("Error adding document: ", error);
-            });
-
-          ref2 //guarda id de la reseña en documento de la serie
-            .get()
-            .then((doc) => {
-              if (doc.exists) {
-                //la serie ya existe en la base de datos --> se añade la reseña a su lista y se añade la nota
-                var a = doc.data().notas;
-
-                console.log(a[_this.form.nota]);
-                if (isNaN(a[_this.form.nota])) a[_this.form.nota] = 1;
-                else a[_this.form.nota] += 1;
-
-                ref2
-                  .update({
-                    reviews: firebase.firestore.FieldValue.arrayUnion(
-                      docRef.id
-                    ),
-                    notas: a,
-                  })
-                  .then((data) => {
-                    console.log("Document written successfully: ", data);
-                    this.$router.go();
-                  })
-                  .catch((error) => {
-                    console.error("Error adding document: ", error);
-                    this.$router.go();
-                  });
-              } else {
-                //esta es la primera reseña de la serie --> hay que crearla en la base de datos
-                var n = {};
-                n[_this.form.nota] = 1;
-
-                ref2
-                  .set({
-                    reviews: [docRef.id],
-                    notas: n,
-                  })
-                  .then((data) => {
-                    console.log("Document written successfully: ", data);
-                    this.$router.go();
-                  })
-                  .catch((error) => {
-                    console.error("Error adding document: ", error);
-                    this.$router.go();
-                  });
-              }
-            })
-            .catch((error) => {
-              console.error("Error adding document: ", error);
-            });
-            */
         })
         .catch((error) => {
           console.error("Error adding document: ", error);
@@ -1060,8 +969,6 @@ export default {
                     doc.data().alternativo,
                     data.usuario,
                   ];
-
-                  console.log("HOLAAAA ", _this.reviews);
 
                   if (_this.reviews.length == _this.idsReviews.length) {
                     _this.reviewsObtenidos = true;
@@ -1098,12 +1005,8 @@ export default {
             _this.notas = JSON.parse(JSON.stringify(doc.data())).notas;
 
             for (const l of Object.keys(doc.data().notas)) {
-              console.log(l);
-              console.log(_this.datos.datasets[0].data[l - 1]);
               _this.datos.datasets[0].data[l - 1] = doc.data().notas[l];
             }
-
-            console.log("DATA ", _this.datos.datasets[0].data);
 
             for (const key of _this.idsReviews.keys()) {
               _this.obtenerReviewPorID(key);
@@ -1149,9 +1052,6 @@ export default {
       var cont = 0;
 
       for (var i in this.notas) {
-        console.log(i);
-        console.log(this.notas[i]);
-
         cont += this.notas[i];
         sum += i * this.notas[i];
       }
