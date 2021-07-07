@@ -111,11 +111,11 @@ export default {
   watch: {
     currentPage: function (value) {
       this.datosObtenidos = false;
-      console.log("entra??? ", value);
+      console.log(value);
     },
     "$route.query.type": {
       handler: function (search) {
-        console.log("hola plorfavor", search);
+        console.log(search);
         this.datosObtenidos = false;
       },
       deep: true,
@@ -168,14 +168,12 @@ export default {
       console.log("Error: " + data);
     },
     getNumFilas() {
-      console.log(this.datosBusqueda["total_results"]);
       return this.datosBusqueda["total_results"];
     },
     getNombre(i) {
       if (this.datosBusqueda["results"][i] != undefined)
         return this.datosBusqueda["results"][i]["name"];
       else{
-          console.log(this.datosBusqueda["results"][i]);
           return "";
     }
     },
@@ -194,7 +192,6 @@ export default {
     getFoto(i) {
       if (this.datosBusqueda["results"][i] != undefined) {
         if (this.datosBusqueda["results"][i]["profile_path"] != null) {
-          console.log(this.datosBusqueda["results"][i]["profile_path"]);
           return (
             "https://image.tmdb.org/t/p/original" +
             String(this.datosBusqueda["results"][i]["profile_path"])
