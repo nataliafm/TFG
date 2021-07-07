@@ -1,22 +1,24 @@
 <template>
   <div class="inicioSinRegistrar">
     <div class="registrate">
-      Regístrate para acceder a todos nuestros contenidos
       <b-container class="beneficios" >
-        <b-row class="fila" align="left">
+        <b-row>
+          <b-col>Regístrate para acceder a todos nuestros contenidos</b-col>
+        </b-row>
+        <b-row class="fila" align="left" align-v="center">
           <b-col class="card-ventaja" cols="6">Guarda tus series favoritas</b-col>
           <b-col class="card-ventaja" cols="6"
             >Puntúa series y escribe reseñas</b-col
           >
         </b-row>
         <div></div>
-        <b-row class="fila" align="left">
+        <b-row class="fila" align="left" align-v="center">
           <b-col class="card-ventaja" cols="6">Crea listas</b-col>
           <b-col class="card-ventaja" cols="6"
             >Encuentra tu próxima serie favorita</b-col
           >
         </b-row>
-        <b-row class="fila" align="left">
+        <b-row class="fila" align="left" align-v="center">
           <b-col class="card-ventaja" cols="6"
             >Interactúa con otros amantes de las series</b-col
           >
@@ -34,33 +36,23 @@
       </div>
       <b-card-group v-if="terminado">
         <b-card class="card" title-tag="h6">
-          <router-link :to="{path:'/serie', query: { id: getId(0) }}">
             <b-card-img :src="getPoster(0)" :alt="getTitulo(0)"/>
-          </router-link>
           <b-card-title :title="getTitulo(0)" title-tag="h1" class="title"/>
         </b-card>
         <b-card class="card" title-tag="h6">
-          <router-link :to="{path:'/serie', query: { id: getId(1) }}">
             <b-card-img :src="getPoster(1)" :alt="getTitulo(1)"/>
-          </router-link>
           <b-card-title :title="getTitulo(1)" title-tag="h1" class="title"/>
         </b-card>
         <b-card class="card" title-tag="h6">
-          <router-link :to="{path:'/serie', query: { id: getId(2) }}">
             <b-card-img :src="getPoster(2)" :alt="getTitulo(2)"/>
-          </router-link>
           <b-card-title :title="getTitulo(2)" title-tag="h1" class="title"/>
         </b-card>
         <b-card class="card" title-tag="h6">
-          <router-link :to="{path:'/serie', query: { id: getId(3) }}">
             <b-card-img :src="getPoster(3)" :alt="getTitulo(3)"/>
-          </router-link>
           <b-card-title :title="getTitulo(3)" title-tag="h1" class="title"/>
         </b-card>
         <b-card class="card" title-tag="h6">
-          <router-link :to="{path:'/serie', query: { id: getId(4) }}">
             <b-card-img :src="getPoster(4)" :alt="getTitulo(4)"/>
-          </router-link>
           <b-card-title :title="getTitulo(4)" title-tag="h1" class="title"/>
         </b-card>
       </b-card-group>

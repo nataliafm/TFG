@@ -52,12 +52,16 @@
       </b-collapse>
     </b-navbar>
     <router-view>{{ estaLogueado() }}</router-view>
-    <div class="footer">
-      <span class="texto-footer"
-        >© Natalia Fernández Martínez. Todas las imágenes y datos usados son
-        cortesía de <a style="color: white;" href="https://www.themoviedb.org/"><u>TMDB</u></a></span
-      >
-    </div>
+    <b-navbar class="footer" fixed="bottom" v-if="esLoginRegistro()" >
+      <b-nav-text class="texto-footer">
+        © Natalia Fernández Martínez. Todas las imágenes y datos usados son
+        cortesía de <a style="color: white;" href="https://www.themoviedb.org/"><u>TMDB</u></a></b-nav-text>
+    </b-navbar>
+    <b-navbar class="footer" v-else>
+      <b-nav-text class="texto-footer">
+        © Natalia Fernández Martínez. Todas las imágenes y datos usados son
+        cortesía de <a style="color: white;" href="https://www.themoviedb.org/"><u>TMDB</u></a></b-nav-text>
+    </b-navbar>
   </div>
 </template>
 
@@ -75,6 +79,12 @@ export default {
     };
   },
   methods: {
+    esLoginRegistro() {
+      console.log(this.$route.name);
+      if (this.$route.name == "login" || this.$route.name == "registro")
+        return true;
+      else return false;
+    },
     estaLogueado() {
       var _this = this;
       firebase.auth().onAuthStateChanged(function (user) {
@@ -124,10 +134,12 @@ export default {
 }
 .footer {
   background-color: #845ec2;
-  padding-top: 1em;
-  padding-bottom: 1em;
+  height: 40px;
 }
 .texto-footer {
   color: white;
+  left: 0;
+  right: 0;
+  position: absolute;
 }
 </style>
