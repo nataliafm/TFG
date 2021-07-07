@@ -184,7 +184,6 @@ export default {
         });
     },
     aniadirReview(datos, i) {
-      console.log("HA ENTRADO ", i, datos);
       var db = firebase.firestore();
       var ref = db.collection("Reviews").doc(datos.ultimoReview);
       var _this = this;
@@ -193,14 +192,8 @@ export default {
         .get()
         .then((d) => {
           if (d.exists) {
-            console.log("RESULTADO 2: ", d.data());
-
-            console.log("kwjengkjeng ", i);
-
             _this.infoReviews[i] = d.data();
             _this.reviewActual = i;
-
-            console.log("aeiou ", _this.infoReviews);
 
             if (d.data().idContenido.tipo == "serie") {
               themoviedb.tv.getById(
@@ -242,18 +235,8 @@ export default {
             };
 
             _this.infoAmigos[i] = datos;
-            console.log("llega aqui ", datos);
-
-            console.log("holaholahola ", i, _this.infoAmigos);
-            console.log("ccccc ", _this.infoReviews);
-            console.log("ddddd ", _this.infoCapitulos);
-
-            console.log(datos.ultimoReview == undefined);
-            console.log(datos.ultimoCap.length == 0);
-            console.log(i);
 
             if (datos.ultimoReview != undefined) {
-              console.log("llegaaa");
               _this.aniadirReview(datos, i);
             } else if (datos.ultimoCap.length > 0) {
               themoviedb.tv.getById(
@@ -262,7 +245,6 @@ export default {
                 _this.error
               );
             } else {
-              console.log("Holaaa");
               if (_this.infoAmigos.length == _this.idsAmigos.length) {
                 _this.infoAmigosObtenida = true;
               }
@@ -273,7 +255,7 @@ export default {
         });
     },
     exitoR(data) {
-      console.log("Datosss:", data);
+      console.log("Datos:", data);
       var datos = JSON.parse(data);
 
       this.renderReviews = true;
@@ -299,14 +281,12 @@ export default {
         );
       } else {
         if (this.infoAmigos.length == this.idsAmigos.length && this.infoReviews.length == this.getNumR()){
-        //if (this.infoAmigos.length == this.idsAmigos.length) {
-          console.log("ha entrado 1");
           this.infoAmigosObtenida = true;
         }
       }
     },
     exito(data) {
-      console.log("Document data 1:", data);
+      console.log("Document data:", data);
       var datos = JSON.parse(data);
 
       this.infoCapitulos.set(datos["id"], {
@@ -314,11 +294,7 @@ export default {
         nombre: datos["name"],
       });
 
-      console.log("aaaaa ", this.infoCapitulos);
-
-      //if (this.infoAmigos.length == this.idsAmigos.length) {
       if (this.infoAmigos.length == this.idsAmigos.length && this.infoCapitulos.size == this.getNumCapitulos()){
-        console.log("ha entrado 2", this.infoAmigos, this.infoCapitulos);
         this.infoAmigosObtenida = true;
         this.renderCaps = true;
       }
@@ -351,7 +327,6 @@ export default {
       return this.infoReviews.length;
     },
     myEventHandler(e) {
-      console.log(e.target.innerWidth);
       if (e.target.innerWidth < 580) {
         this.perPage = 2;
         this.perPageLista = 2;
@@ -383,7 +358,6 @@ export default {
         for (var x of this.infoAmigos.keys()) {
           if (this.infoAmigos[x].ultimoCap.length > 0) {
             if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
-              console.log("entra aqui");
               indexAmigo = x;
             }
           }
@@ -406,7 +380,6 @@ export default {
         for (var x of this.infoAmigos.keys()) {
           if (this.infoAmigos[x].ultimoCap.length > 0) {
             if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
-              console.log("entra aqui");
               indexAmigo = x;
             }
           }
@@ -429,7 +402,6 @@ export default {
         for (var x of this.infoAmigos.keys()) {
           if (this.infoAmigos[x].ultimoCap.length > 0) {
             if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
-              console.log("entra aqui");
               indexAmigo = x;
             }
           }
@@ -452,7 +424,6 @@ export default {
         for (var x of this.infoAmigos.keys()) {
           if (this.infoAmigos[x].ultimoCap.length > 0) {
             if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
-              console.log("entra aqui");
               indexAmigo = x;
             }
           }
@@ -480,7 +451,6 @@ export default {
       else return "";
     },
     getFotoSerie(i, j) {
-      console.log("holap ", this.infoCapitulos);
       var array = [];
       var llaves = this.infoCapitulos.entries();
 
@@ -520,7 +490,6 @@ export default {
         for (var x of this.infoAmigos.keys()) {
           if (this.infoAmigos[x].ultimoCap.length > 0) {
             if (this.infoAmigos[x].ultimoCap[0] == path[0]) {
-              console.log("entra aqui");
               indexAmigo = x;
             }
           }
@@ -554,7 +523,6 @@ export default {
     },
     getReviewNombre(i) {
       if (this.infoReviews[i] != undefined) {
-        console.log(this.infoReviews);
         if (this.infoReviews[i].idContenido.tipo == "serie")
           return this.infoReviews[i].nombre;
         else if (this.infoReviews[i].idContenido.tipo == "temporada")
