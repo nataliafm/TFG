@@ -111,8 +111,7 @@ export default {
           this.resultado[4] = aux;
           break;
       }
-      //this.resultado[aux['results'][0]['name']] = aux;
-      //this.resultado.push(aux);
+      
       if (this.resultado[0]["results"][0]["name"] == "Breaking Bad" &&
           this.resultado[1]["results"][0]["name"] == "Game of Thrones" &&
           this.resultado[2]["results"][0]["name"] == "The Crown" &&
@@ -124,7 +123,6 @@ export default {
       console.log("Error callback: " + data);
     },
     obtenerSeries() {
-      // queries = ["Breaking%20Bad", "Game%20of%20Thrones", "The%20Crown", "How%20to%20get%20away", "The%20Office%20US"];
       for (var i = 0; i < this.queries.length; i++) {
         this.ejecutarQuery(i).then((res) => {
           console.log(res);
