@@ -52,6 +52,12 @@
       </b-collapse>
     </b-navbar>
     <router-view>{{ estaLogueado() }}</router-view>
+    <div class="footer">
+      <span class="texto-footer"
+        >© Natalia Fernández Martínez. Todas las imágenes y datos usados son
+        cortesía de <a style="color: white;" href="https://www.themoviedb.org/"><u>TMDB</u></a></span
+      >
+    </div>
   </div>
 </template>
 
@@ -115,5 +121,13 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.footer {
+  background-color: #845ec2;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+.texto-footer {
+  color: white;
 }
 </style>
