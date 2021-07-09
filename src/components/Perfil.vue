@@ -122,7 +122,7 @@
             v-if="renderListas"
             :key="getKey()"
           ></b-pagination>
-          <b-card-group deck v-if="renderListas" id="listas" :key="getKey()">
+          <b-card-group v-if="renderListas" id="listas" :key="getKey()">
             <b-card
               v-for="j in Array(getPerPageLista()).keys()"
               :key="j"
